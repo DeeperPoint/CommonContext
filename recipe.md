@@ -71,6 +71,37 @@ Identify and obtain authoritative documents for the target vertical. For grain t
 
 **Alternative tool:** `pymupdf4llm` — lighter weight, no ML models, faster, but lower quality on complex layouts. Consider for simple documents.
 
+### Step 2b — Web Page to Markdown Conversion
+
+**Tool:** `requests` + `BeautifulSoup` + `markdownify` (all pre-installed in `.venv`)
+
+**Script:** `convert_url.py`
+
+**Command:**
+```powershell
+.venv\Scripts\python.exe convert_url.py https://example.com/page
+.venv\Scripts\python.exe convert_url.py https://example.com/page -o outputs/page_name.md
+.venv\Scripts\python.exe convert_url.py https://example.com/page --no-links
+.venv\Scripts\python.exe convert_url.py https://example.com/page --include-images
+```
+
+**What it does:**
+1. Fetches the page with a standard browser User-Agent
+2. Identifies the main content area (`<main>`, `<article>`, or content-classed `<div>`)
+3. Strips navigation, headers, footers, sidebars, ads, and other boilerplate
+4. Converts the remaining HTML to clean Markdown with ATX headings
+5. Prepends a YAML frontmatter header with the source URL and page title
+6. Writes the output to `outputs/` (auto-named from URL if `-o` is not specified)
+
+**Options:**
+- `--no-links` — strip hyperlinks (useful for cleaner reference text)
+- `--include-images` — preserve image references (default: images are stripped)
+- `-o` / `--output` — specify output path (default: auto-generated from URL in `outputs/`)
+
+**When to use this vs. PDF conversion:**
+- Use `convert_url.py` for web-published reference material (regulations, guides, trade body pages)
+- Use `convert_pdf.py` for formal documents distributed as PDFs (contracts, standards, official publications)
+
 ### Step 3 — Domain Schema Extraction
 
 After conversion, analyse the Markdown to extract a domain schema — the structured vocabulary of the vertical.
@@ -201,12 +232,13 @@ One contract yields more schema coverage than a dozen regulatory documents.
 
 ## 4. Tool Reference
 
-### PDF Conversion
+### Document Conversion
 
-| Tool          | Install                                     | Use Case                                                                        |
-| ------------- | ------------------------------------------- | ------------------------------------------------------------------------------- |
-| `marker-pdf`  | `pip install marker-pdf` (Python 3.12 venv) | High-quality conversion of complex documents with tables, nested lists, headers |
-| `pymupdf4llm` | `pip install pymupdf4llm`                   | Fast, lightweight conversion of simpler documents                               |
+| Tool                                         | Script           | Install                                     | Use Case                                               |
+| -------------------------------------------- | ---------------- | ------------------------------------------- | ------------------------------------------------------ |
+| `marker-pdf`                                 | `convert_pdf.py` | `pip install marker-pdf` (Python 3.12 venv) | High-quality PDF conversion with layout detection      |
+| `pymupdf4llm`                                | —                | `pip install pymupdf4llm`                   | Fast, lightweight PDF conversion for simpler documents |
+| `requests` + `BeautifulSoup` + `markdownify` | `convert_url.py` | Pre-installed in `.venv`                    | Web page scraping and conversion to Markdown           |
 
 ### Schema Extraction
 
@@ -214,13 +246,14 @@ Currently manual (AI-assisted). Future tooling TBD.
 
 ### File Locations
 
-| File              | Path             | Description                                |
-| ----------------- | ---------------- | ------------------------------------------ |
-| PDF inputs        | `inputs/`        | Raw PDF source documents                   |
-| Markdown outputs  | `outputs/`       | Converted Markdown files                   |
-| Domain schemas    | `outputs/`       | YAML schema files extracted from contracts |
-| Conversion script | `convert_pdf.py` | marker-pdf wrapper script                  |
-| This recipe       | `recipe.md`      | Process documentation (this file)          |
+| File                  | Path             | Description                                        |
+| --------------------- | ---------------- | -------------------------------------------------- |
+| PDF inputs            | `inputs/`        | Raw PDF source documents                           |
+| Markdown outputs      | `outputs/`       | Converted Markdown files (from PDFs and web pages) |
+| Domain schemas        | `outputs/`       | YAML schema files extracted from contracts         |
+| PDF conversion script | `convert_pdf.py` | marker-pdf wrapper                                 |
+| URL conversion script | `convert_url.py` | Web page scraper and Markdown converter            |
+| This recipe           | `recipe.md`      | Process documentation (this file)                  |
 
 ---
 
