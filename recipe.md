@@ -46,6 +46,8 @@ Identify and obtain authoritative documents for the target vertical. For grain t
 - [ ] GAFTA Contract No. 48 — (identified as next candidate)
 - [ ] GAFTA Contract No. 100 — (identified as next candidate)
 
+**Provenance tracking:** Every document acquired — whether uploaded as a file or fetched from a URL — has its origin recorded in `provenance/`. This includes the source URL, acquisition method, HTTP headers, and timestamps. The provenance data ensures that when chunks are eventually embedded and retrieved, each chunk can cite its original authoritative source. See `provenance.py`.
+
 ### Step 2 — PDF to Markdown Conversion
 
 **Tool:** `marker-pdf` (Python, via `.venv` virtual environment)
@@ -101,12 +103,80 @@ Identify and obtain authoritative documents for the target vertical. For grain t
 **When to use this vs. PDF conversion:**
 - Use `convert_url.py` for web-published reference material (regulations, guides, trade body pages)
 - Use `convert_pdf.py` for formal documents distributed as PDFs (contracts, standards, official publications)
+- **Auto-detection:** The GUI's URL Fetch automatically detects whether a URL serves an HTML page or a downloadable file (e.g. PDF). HTML pages go through the URL pipeline; downloadable files are saved to `inputs/` and converted via the file pipeline. In both cases, the source URL is recorded as provenance.
+
+### Step 2c — Document Metadata Extraction (for local files)
+
+When a document arrives as a local file (e.g., received by email, downloaded manually) rather than via a tracked URL, it lacks automatic provenance. The metadata extractor uses an LLM to read the converted markdown and impute structured citation metadata.
+
+**Tool:** `metadata_extractor.py` — LLM-assisted extraction via OpenRouter
+
+**GUI:** Click the 📋 **Metadata** button next to any converted document in the GUI.
+
+**CLI:**
+```powershell
+.venv\Scripts\python.exe metadata_extractor.py outputs/<filename>.md
+.venv\Scripts\python.exe metadata_extractor.py outputs/<filename>.md --model anthropic/claude-sonnet-4
+```
+
+**What gets extracted:**
+
+| Field                | Example                                      |
+| -------------------- | -------------------------------------------- |
+| Title & identifier   | "GAFTA Contract No. 27 (2025 Edition)"       |
+| Issuing organisation | "Grain and Feed Trade Association (GAFTA)"   |
+| Author(s)            | Individual names and roles if mentioned      |
+| Date of publication  | "2025" (year or full ISO date)               |
+| Document type        | contract, standard, regulation, guide, etc.  |
+| Geographic scope     | Jurisdictions and trade corridors            |
+| Referenced standards | External documents incorporated by reference |
+| Confidence notes     | What was clearly stated vs. inferred         |
+
+**How it works:**
+1. Loads the extraction prompt from `prompts/metadata_extraction.md` (editable)
+2. Reads the converted Markdown and any existing provenance record
+3. Sends both to an LLM via OpenRouter with structured extraction instructions
+4. The LLM returns YAML metadata with citation-quality fields
+5. Results are merged into the document's `provenance/` JSON record
+6. The output markdown's YAML frontmatter is updated with the extracted title
+7. In the GUI, results are shown in the document viewer and the Source column updates
+
+**Key insight:** This is designed for the ~5% of documents that arrive without a URL. For URL-sourced documents, the source URL is captured automatically during fetch. Metadata extraction can still be run on URL-sourced documents to enrich their provenance with title, organization, and other structured fields.
 
 ### Step 3 — Domain Schema Extraction
 
 After conversion, analyse the Markdown to extract a domain schema — the structured vocabulary of the vertical.
 
-**Approach:** Read the converted document and identify:
+**Tool:** `schema_analyzer.py` — LLM-assisted analysis via OpenRouter
+
+**GUI:** Click the 🔬 **Analyse** button next to any converted document in the GUI.
+
+**CLI:**
+```powershell
+.venv\Scripts\python.exe schema_analyzer.py outputs/<filename>.md
+.venv\Scripts\python.exe schema_analyzer.py outputs/<filename>.md --schema schemas/grain_trade_schema.yaml
+.venv\Scripts\python.exe schema_analyzer.py outputs/<filename>.md --model anthropic/claude-sonnet-4
+```
+
+**How it works:**
+1. Loads the analysis prompt from `prompts/schema_analysis.md` (editable)
+2. Reads the converted Markdown document and the existing domain schema (auto-detected from `schemas/`)
+3. Sends both to an LLM via OpenRouter with structured extraction instructions
+4. The LLM returns proposed additions, refinements, roles, referenced standards, and excluded conventions
+5. Results are saved as YAML to `analyses/<filename>_analysis.yaml`
+6. In the GUI, results are shown in the document viewer and listed on the Analyses page
+
+**Configuration:**
+
+| Setting         | How to configure                             | Default                                               |
+| --------------- | -------------------------------------------- | ----------------------------------------------------- |
+| API key         | `OPENROUTER_API_KEY` env var or `.env` file  | Auto-discovered from `DPWebsitePublishingSystem/.env` |
+| LLM model       | `OPENROUTER_MODEL` env var or `--model` flag | `google/gemini-2.0-flash-001`                         |
+| Prompt template | Edit `prompts/schema_analysis.md`            | Provided with structured extraction instructions      |
+
+**Prompt customisation:** The analysis prompt at `prompts/schema_analysis.md` is loaded at runtime and supports variable substitution (`{{DOCUMENT_CONTENT}}`, `{{EXISTING_SCHEMA}}`, etc.). To change the analysis behaviour — adjust entity categories, add vertical-specific instructions, change the output format — edit this file directly. No code changes required.
+
+**Approach:** The prompt instructs the LLM to identify:
 
 1. **Entities** — the major conceptual objects (goods, quantity, pricing, shipment, payment, etc.)
 2. **Fields per entity** — the attributes that describe each entity (type, allowed values, defaults)
@@ -115,7 +185,7 @@ After conversion, analyse the Markdown to extract a domain schema — the struct
 5. **Referenced standards** — what external documents are incorporated by reference
 6. **Excluded conventions** — what the source explicitly excludes (critical for AI to avoid citing)
 
-**Output format:** YAML schema file (see `outputs/grain_trade_schema.yaml`)
+**Output format:** YAML analysis file saved to `analyses/` (see `analyses/<filename>_analysis.yaml`). The existing production schema is maintained separately in `schemas/` (see `schemas/grain_trade_schema.yaml`).
 
 **Why YAML:**
 - Human-readable — sponsors can review and edit
@@ -242,18 +312,31 @@ One contract yields more schema coverage than a dozen regulatory documents.
 
 ### Schema Extraction
 
-Currently manual (AI-assisted). Future tooling TBD.
+| Tool                    | Script                  | Configuration                    | Use Case                                      |
+| ----------------------- | ----------------------- | -------------------------------- | --------------------------------------------- |
+| `schema_analyzer.py`    | `schema_analyzer.py`    | `prompts/schema_analysis.md`     | LLM-assisted schema extraction via OpenRouter |
+| `metadata_extractor.py` | `metadata_extractor.py` | `prompts/metadata_extraction.md` | LLM-assisted document metadata extraction     |
+| OpenRouter API          | —                       | `OPENROUTER_API_KEY` env var     | LLM provider (Gemini, Claude, GPT, etc.)      |
 
 ### File Locations
 
-| File                  | Path             | Description                                        |
-| --------------------- | ---------------- | -------------------------------------------------- |
-| PDF inputs            | `inputs/`        | Raw PDF source documents                           |
-| Markdown outputs      | `outputs/`       | Converted Markdown files (from PDFs and web pages) |
-| Domain schemas        | `outputs/`       | YAML schema files extracted from contracts         |
-| PDF conversion script | `convert_pdf.py` | marker-pdf wrapper                                 |
-| URL conversion script | `convert_url.py` | Web page scraper and Markdown converter            |
-| This recipe           | `recipe.md`      | Process documentation (this file)                  |
+| File                  | Path                             | Description                                        |
+| --------------------- | -------------------------------- | -------------------------------------------------- |
+| PDF inputs            | `inputs/`                        | Raw PDF source documents                           |
+| Markdown outputs      | `outputs/`                       | Converted Markdown files (from PDFs and web pages) |
+| Domain schemas        | `schemas/`                       | YAML schema files extracted from contracts         |
+| Analysis results      | `analyses/`                      | LLM-generated schema proposals                     |
+| Provenance records    | `provenance/`                    | Source URL and acquisition metadata (JSON per doc) |
+| Analysis prompt       | `prompts/schema_analysis.md`     | Editable LLM prompt template                       |
+| Metadata prompt       | `prompts/metadata_extraction.md` | Editable LLM prompt for document metadata          |
+| Schema analyzer       | `schema_analyzer.py`             | LLM-assisted schema extraction engine              |
+| Metadata extractor    | `metadata_extractor.py`          | LLM-assisted document metadata extraction          |
+| Provenance tracker    | `provenance.py`                  | Records source URL and metadata for every document |
+| PDF conversion script | `convert_pdf.py`                 | marker-pdf wrapper                                 |
+| URL conversion script | `convert_url.py`                 | Web page scraper and Markdown converter            |
+| FastAPI server        | `server.py`                      | GUI backend wrapping all tools                     |
+| GUI interface         | `static/index.html`              | Single-page web application                        |
+| This recipe           | `recipe.md`                      | Process documentation (this file)                  |
 
 ---
 

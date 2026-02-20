@@ -117,7 +117,11 @@ This project curates the **content** side of the Knowledge Slot — the referenc
 | Deliverable                        | Format           | Description                                                           | Status                              |
 | ---------------------------------- | ---------------- | --------------------------------------------------------------------- | ----------------------------------- |
 | **Converted reference documents**  | Markdown         | PDF source documents converted to clean Markdown                      | `outputs/27_2025.md` ✅              |
-| **Domain schema**                  | YAML             | Structured vocabulary extracted from reference documents              | `outputs/grain_trade_schema.yaml` ✅ |
+| **Domain schema**                  | YAML             | Structured vocabulary extracted from reference documents              | `schemas/grain_trade_schema.yaml` ✅ |
+| **Schema analysis results**        | YAML             | LLM-generated proposals for schema additions and refinements          | `analyses/` ✅                       |
+| **Analysis prompt template**       | Markdown         | Editable LLM prompt for schema extraction                             | `prompts/schema_analysis.md` ✅      |
+| **Provenance metadata**            | JSON             | Source URL, acquisition method, and timestamps for every document     | `provenance/` ✅                     |
+| **Metadata extraction prompt**     | Markdown         | Editable LLM prompt for document metadata extraction                  | `prompts/metadata_extraction.md` ✅  |
 | **Metadata tag vocabulary**        | YAML (in schema) | Vertical-specific tags for the `reference_metadata_schema`            | Embedded in schema ✅                |
 | **Participant role map**           | YAML (in schema) | GAFTA roles mapped to Cosolvent supply/demand/facilitator categories  | In schema §19 ✅                     |
 | **Referenced standards inventory** | YAML (in schema) | Standards incorporated by reference — candidates for future ingestion | In schema §20 ✅                     |
@@ -150,18 +154,29 @@ This project curates the **content** side of the Knowledge Slot — the referenc
 **Goal:** Establish tooling and process; produce first domain schema from a reference contract.
 
 - [x] Set up PDF-to-Markdown conversion pipeline (`marker-pdf`)
+- [x] Set up URL-to-Markdown conversion pipeline (`convert_url.py`)
 - [x] Convert first reference document (GAFTA Contract No. 27)
 - [x] Extract domain schema from converted document
 - [x] Map participant roles to Cosolvent categories
 - [x] Document the curation process (`recipe.md`)
 - [x] Create project roadmap (this file)
+- [x] Build web GUI for document ingestion and conversion (`server.py` + `static/index.html`)
+- [x] Add LLM-assisted schema analysis via OpenRouter (`schema_analyzer.py`)
+- [x] Create editable prompt template for schema extraction (`prompts/schema_analysis.md`)
+- [x] Add Analyses page to GUI for reviewing LLM-generated schema proposals
+- [x] Add provenance tracking — source URL, acquisition method, timestamps recorded for every document (`provenance.py`)
+- [x] Smart URL detection — URL fetch auto-detects HTML vs. downloadable files (e.g. PDFs) and routes to the correct pipeline
+- [x] YAML frontmatter injection — every output markdown includes `source_url` for downstream chunking
+- [x] LLM-assisted metadata extraction — imputes org, author, date, doc type for locally-uploaded files (`metadata_extractor.py`)
+- [x] Editable metadata extraction prompt (`prompts/metadata_extraction.md`)
 
 ### Phase 2 — Schema Enrichment
 
 **Goal:** Process additional contracts and standards to broaden and refine the domain schema.
 
 - [ ] Acquire additional GAFTA contracts (No. 48, No. 100) covering different trade configurations (FOB terms, specific commodities)
-- [ ] Convert and extract schemas from additional contracts
+- [ ] Convert and run schema analysis on additional contracts (using GUI or CLI)
+- [ ] Review LLM-generated proposals in `analyses/` and merge approved additions into `schemas/grain_trade_schema.yaml`
 - [ ] Merge schemas — identify common entities, resolve conflicts, note configuration-dependent variations
 - [ ] Process referenced GAFTA standards (Nos. 72, 123, 124, 125, 130, 132)
 - [ ] Add government grading standards (Canadian Grain Commission, USDA/FGIS)
@@ -173,6 +188,7 @@ This project curates the **content** side of the Knowledge Slot — the referenc
 
 - [ ] Define chunking strategy that preserves clause-level coherence
 - [ ] Tag each document chunk with vertical-specific metadata
+- [ ] Leverage provenance metadata (source URL, source type, document title) from `provenance/` as chunk-level citation data
 - [ ] Generate embeddings for reference document chunks
 - [ ] Create seed data scripts for the `reference_library` table
 - [ ] Write domain Q&A system prompts for grain trading vertical

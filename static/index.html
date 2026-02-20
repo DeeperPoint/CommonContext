@@ -1,0 +1,1605 @@
+<!-- Copyright (c) 2026 Mustafa Uzumeri. All rights reserved. -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knowledge Slot Curation Tool</title>
+  <meta name="description" content="Ingest and convert reference documents for Cosolvent marketplace verticals">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ── Reset & Variables ──────────────────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #111827;
+      --bg-card: #1a1f35;
+      --bg-card-hover: #1e2440;
+      --bg-input: #141929;
+      --bg-glass: rgba(26, 31, 53, 0.75);
+
+      --border-subtle: rgba(99, 115, 171, 0.15);
+      --border-active: rgba(99, 148, 255, 0.4);
+
+      --text-primary: #e4e8f7;
+      --text-secondary: #8892b0;
+      --text-muted: #5a6380;
+      --text-accent: #6394ff;
+
+      --accent-blue: #6394ff;
+      --accent-emerald: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-rose: #fb7185;
+      --accent-violet: #a78bfa;
+      --accent-cyan: #22d3ee;
+
+      --gradient-hero: linear-gradient(135deg, #6394ff 0%, #a78bfa 50%, #34d399 100%);
+      --gradient-card: linear-gradient(145deg, rgba(99, 148, 255, 0.05), rgba(167, 139, 250, 0.03));
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.5);
+      --shadow-glow: 0 0 20px rgba(99, 148, 255, 0.15);
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+
+      --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────────────────── */
+    .app-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ────────────────────────────────────────────────────────── */
+    .sidebar {
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-subtle);
+      padding: 24px 0;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar-brand {
+      padding: 0 20px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .sidebar-brand h1 {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: var(--gradient-hero);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .sidebar-brand .subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .sidebar-nav {
+      padding: 16px 12px;
+      flex: 1;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      padding: 12px 8px 6px;
+      font-weight: 600;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid transparent;
+      user-select: none;
+    }
+
+    .nav-item:hover {
+      background: rgba(99, 148, 255, 0.06);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: rgba(99, 148, 255, 0.1);
+      color: var(--accent-blue);
+      border-color: rgba(99, 148, 255, 0.15);
+    }
+
+    .nav-item .icon {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .nav-item .badge {
+      margin-left: auto;
+      background: rgba(99, 148, 255, 0.15);
+      color: var(--accent-blue);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 10px;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    /* ── Sidebar Stats ──────────────────────────────────────────────────── */
+    .sidebar-stats {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      font-size: 12px;
+    }
+
+    .stat-row .label {
+      color: var(--text-muted);
+    }
+
+    .stat-row .value {
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    /* ── Main Content ──────────────────────────────────────────────────── */
+    .main-content {
+      padding: 32px 40px;
+      overflow-y: auto;
+    }
+
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-header h2 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .page-header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    /* ── Cards ──────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: all var(--transition-normal);
+    }
+
+    .card:hover {
+      border-color: var(--border-active);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .card-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-header h3 {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-body {
+      padding: 22px;
+    }
+
+    /* ── Ingest Panel ──────────────────────────────────────────────────── */
+    .ingest-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    /* ── Drop Zone ─────────────────────────────────────────────────────── */
+    .drop-zone {
+      border: 2px dashed var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-normal);
+      background: var(--gradient-card);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .drop-zone::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(99, 148, 255, 0.04), transparent 70%);
+      pointer-events: none;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.drag-over {
+      border-color: var(--accent-blue);
+      background: rgba(99, 148, 255, 0.05);
+    }
+
+    .drop-zone.drag-over {
+      transform: scale(1.01);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .drop-zone .icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+      display: block;
+      opacity: 0.7;
+    }
+
+    .drop-zone .label {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .drop-zone .hint {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .drop-zone .supported-types {
+      margin-top: 14px;
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .type-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .type-badge.pdf {
+      background: rgba(251, 113, 133, 0.15);
+      color: var(--accent-rose);
+    }
+
+    .type-badge.html {
+      background: rgba(99, 148, 255, 0.15);
+      color: var(--accent-blue);
+    }
+
+    .type-badge.image {
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--accent-emerald);
+    }
+
+    .type-badge.docx {
+      background: rgba(167, 139, 250, 0.15);
+      color: var(--accent-violet);
+    }
+
+    .type-badge.md {
+      background: rgba(251, 191, 36, 0.15);
+      color: var(--accent-amber);
+    }
+
+    .type-badge.url {
+      background: rgba(34, 211, 238, 0.15);
+      color: var(--accent-cyan);
+    }
+
+    .type-badge.future {
+      opacity: 0.5;
+    }
+
+    /* ── URL Input ─────────────────────────────────────────────────────── */
+    .url-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .text-input {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      outline: none;
+      transition: border-color var(--transition-fast);
+    }
+
+    .text-input:focus {
+      border-color: var(--accent-blue);
+    }
+
+    .text-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .checkbox-group {
+      display: flex;
+      gap: 16px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+      accent-color: var(--accent-blue);
+    }
+
+    /* ── Buttons ────────────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--accent-blue);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #4f7ff5;
+      box-shadow: 0 0 20px rgba(99, 148, 255, 0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-secondary);
+      border-color: var(--border-subtle);
+    }
+
+    .btn-secondary:hover {
+      color: var(--text-primary);
+      border-color: var(--border-active);
+      background: rgba(99, 148, 255, 0.06);
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--accent-rose);
+      border-color: rgba(251, 113, 133, 0.2);
+    }
+
+    .btn-danger:hover {
+      background: rgba(251, 113, 133, 0.1);
+    }
+
+    .btn-sm {
+      padding: 5px 12px;
+      font-size: 12px;
+    }
+
+    /* ── Document Table ─────────────────────────────────────────────────── */
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .doc-table thead th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .doc-table tbody tr {
+      border-bottom: 1px solid rgba(99, 115, 171, 0.07);
+      transition: background var(--transition-fast);
+    }
+
+    .doc-table tbody tr:hover {
+      background: rgba(99, 148, 255, 0.03);
+    }
+
+    .doc-table td {
+      padding: 12px 14px;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    .doc-name {
+      font-weight: 500;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .doc-name .source-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .doc-name .name-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 320px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .status-pill.done {
+      background: rgba(52, 211, 153, 0.12);
+      color: var(--accent-emerald);
+    }
+
+    .status-pill.pending {
+      background: rgba(251, 191, 36, 0.12);
+      color: var(--accent-amber);
+    }
+
+    .status-pill.converting {
+      background: rgba(99, 148, 255, 0.12);
+      color: var(--accent-blue);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .status-pill.error {
+      background: rgba(251, 113, 133, 0.12);
+      color: var(--accent-rose);
+    }
+
+    .status-pill.unsupported {
+      background: rgba(90, 99, 128, 0.12);
+      color: var(--text-muted);
+    }
+
+    .size-text {
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* ── Document Viewer ───────────────────────────────────────────────── */
+    .viewer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--transition-normal);
+    }
+
+    .viewer-overlay.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .viewer-panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      width: 80vw;
+      max-width: 1000px;
+      height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(20px);
+      transition: transform var(--transition-normal);
+    }
+
+    .viewer-overlay.visible .viewer-panel {
+      transform: translateY(0);
+    }
+
+    .viewer-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .viewer-header h3 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .viewer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .viewer-body pre {
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* ── Toast Notifications ───────────────────────────────────────────── */
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 18px;
+      min-width: 300px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.3s ease-out;
+      font-size: 13px;
+    }
+
+    .toast.success {
+      border-left: 3px solid var(--accent-emerald);
+    }
+
+    .toast.error {
+      border-left: 3px solid var(--accent-rose);
+    }
+
+    .toast.info {
+      border-left: 3px solid var(--accent-blue);
+    }
+
+    .toast .icon {
+      font-size: 16px;
+    }
+
+    .toast .message {
+      flex: 1;
+      color: var(--text-secondary);
+    }
+
+    /* ── Empty State ───────────────────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+    }
+
+    .empty-state .icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      display: block;
+      opacity: 0.5;
+    }
+
+    .empty-state .title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .empty-state .desc {
+      font-size: 13px;
+    }
+
+    /* ── Animations ────────────────────────────────────────────────────── */
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.6;
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(40px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    /* ── Spinner ────────────────────────────────────────────────────────── */
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(99, 148, 255, 0.2);
+      border-top-color: var(--accent-blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ── Page: Schemas ──────────────────────────────────────────────────── */
+    .schema-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .schema-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      transition: all var(--transition-normal);
+    }
+
+    .schema-card:hover {
+      border-color: var(--border-active);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .schema-card .name {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .schema-card .meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* ── Responsive ────────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .app-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .main-content {
+        padding: 20px;
+      }
+
+      .ingest-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Hidden file input ─────────────────────────────────────────────── */
+    #fileInput {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app-layout">
+    <!-- ── Sidebar ─────────────────────────────────────────────────────── -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <h1>Knowledge Slot</h1>
+        <div class="subtitle">Curation Tool</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Workspace</div>
+        <div class="nav-item active" data-page="ingest" onclick="navigateTo('ingest')">
+          <span class="icon">📥</span>
+          <span>Ingest</span>
+        </div>
+        <div class="nav-item" data-page="documents" onclick="navigateTo('documents')">
+          <span class="icon">📄</span>
+          <span>Documents</span>
+          <span class="badge" id="docCountBadge">0</span>
+        </div>
+        <div class="nav-item" data-page="schemas" onclick="navigateTo('schemas')">
+          <span class="icon">🧬</span>
+          <span>Schemas</span>
+          <span class="badge" id="schemaCountBadge">0</span>
+        </div>
+        <div class="nav-item" data-page="analyses" onclick="navigateTo('analyses')">
+          <span class="icon">🔬</span>
+          <span>Analyses</span>
+          <span class="badge" id="analysisCountBadge">0</span>
+        </div>
+
+        <div class="nav-section-label">Source Types</div>
+        <div class="nav-item" style="cursor: default; opacity: 0.7;">
+          <span class="icon">📕</span><span>PDF</span>
+          <span class="badge" style="background: rgba(52,211,153,0.15); color: var(--accent-emerald);">✓</span>
+        </div>
+        <div class="nav-item" style="cursor: default; opacity: 0.7;">
+          <span class="icon">🌐</span><span>URL / HTML</span>
+          <span class="badge" style="background: rgba(52,211,153,0.15); color: var(--accent-emerald);">✓</span>
+        </div>
+        <div class="nav-item" style="cursor: default; opacity: 0.7;">
+          <span class="icon">📝</span><span>Markdown</span>
+          <span class="badge" style="background: rgba(52,211,153,0.15); color: var(--accent-emerald);">✓</span>
+        </div>
+        <div class="nav-item" style="cursor: default; opacity: 0.45;">
+          <span class="icon">🖼️</span><span>Image (OCR)</span>
+          <span class="badge" style="background: rgba(251,191,36,0.15); color: var(--accent-amber);">soon</span>
+        </div>
+        <div class="nav-item" style="cursor: default; opacity: 0.45;">
+          <span class="icon">📄</span><span>DOCX</span>
+          <span class="badge" style="background: rgba(251,191,36,0.15); color: var(--accent-amber);">soon</span>
+        </div>
+      </nav>
+
+      <div class="sidebar-stats">
+        <div class="stat-row">
+          <span class="label">Input files</span>
+          <span class="value" id="statInputs">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="label">Converted</span>
+          <span class="value" id="statOutputs">—</span>
+        </div>
+        <div class="stat-row">
+          <span class="label">Schemas</span>
+          <span class="value" id="statSchemas">—</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Main Content ────────────────────────────────────────────────── -->
+    <main class="main-content">
+
+      <!-- PAGE: Ingest -->
+      <div id="page-ingest" class="page fade-in">
+        <div class="page-header">
+          <h2>Ingest Documents</h2>
+          <p>Upload files or fetch URLs to convert into Knowledge Slot content</p>
+        </div>
+
+        <div class="ingest-grid">
+          <!-- File Upload -->
+          <div class="card">
+            <div class="card-header">
+              <h3>📁 File Upload</h3>
+            </div>
+            <div class="card-body">
+              <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <span class="icon">📤</span>
+                <div class="label">Drop files here or click to browse</div>
+                <div class="hint">Files are saved to inputs/ for conversion</div>
+                <div class="supported-types">
+                  <span class="type-badge pdf">PDF</span>
+                  <span class="type-badge html">HTML</span>
+                  <span class="type-badge md">MD</span>
+                  <span class="type-badge image future">Image ⏳</span>
+                  <span class="type-badge docx future">DOCX ⏳</span>
+                </div>
+              </div>
+              <input type="file" id="fileInput" multiple
+                accept=".pdf,.html,.htm,.md,.png,.jpg,.jpeg,.tiff,.tif,.webp,.bmp,.docx">
+            </div>
+          </div>
+
+          <!-- URL Fetch -->
+          <div class="card">
+            <div class="card-header">
+              <h3>🌐 URL Fetch</h3>
+            </div>
+            <div class="card-body">
+              <div class="url-input-group">
+                <div class="input-row">
+                  <input type="text" class="text-input" id="urlInput" placeholder="https://example.com/document">
+                  <button class="btn btn-primary" id="fetchUrlBtn" onclick="fetchUrl()">
+                    Fetch
+                  </button>
+                </div>
+                <div class="checkbox-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="includeLinks" checked>
+                    Include links
+                  </label>
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="includeImages">
+                    Include images
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Batch Convert -->
+        <div class="card" style="margin-bottom: 28px;">
+          <div class="card-header">
+            <h3>⚡ Batch Operations</h3>
+            <button class="btn btn-secondary btn-sm" onclick="convertBatch()">
+              Convert All Pending
+            </button>
+          </div>
+          <div class="card-body" id="batchStatus" style="display: none;">
+            <!-- Populated by batch results -->
+          </div>
+        </div>
+
+        <!-- Recent activity / pending files -->
+        <div class="card">
+          <div class="card-header">
+            <h3>📋 Documents</h3>
+            <button class="btn btn-secondary btn-sm" onclick="refreshDocuments()">
+              ↻ Refresh
+            </button>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div id="documentTable">
+              <div class="empty-state">
+                <span class="icon">📭</span>
+                <div class="title">No documents yet</div>
+                <div class="desc">Upload files or fetch URLs to get started</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: Documents -->
+      <div id="page-documents" class="page" style="display: none;">
+        <div class="page-header">
+          <h2>Document Library</h2>
+          <p>All converted markdown documents ready for Knowledge Slot ingestion</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3>📄 Converted Documents</h3>
+            <button class="btn btn-secondary btn-sm" onclick="refreshDocuments()">↻ Refresh</button>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div id="documentTableFull">
+              <div class="empty-state">
+                <span class="icon">📭</span>
+                <div class="title">No documents yet</div>
+                <div class="desc">Ingest some content first</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: Schemas -->
+      <div id="page-schemas" class="page" style="display: none;">
+        <div class="page-header">
+          <h2>Domain Schemas</h2>
+          <p>YAML schemas defining the domain vocabulary for this vertical</p>
+        </div>
+        <div id="schemaList" class="schema-cards">
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <span class="icon">🧬</span>
+            <div class="title">No schemas found</div>
+            <div class="desc">Place .yaml or .yml files in the schemas/ directory</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: Analyses -->
+      <div id="page-analyses" class="page" style="display: none;">
+        <div class="page-header">
+          <h2>Schema Analyses</h2>
+          <p>LLM-generated schema proposals from document analysis</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3>🔬 Analysis Results</h3>
+            <button class="btn btn-secondary btn-sm" onclick="refreshAnalyses()">↻ Refresh</button>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div id="analysisTable">
+              <div class="empty-state">
+                <span class="icon">🔬</span>
+                <div class="title">No analyses yet</div>
+                <div class="desc">Click "Analyse" on a converted document to generate schema proposals</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          style="margin-top: 16px; padding: 14px 18px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); font-size: 12px; color: var(--text-muted);">
+          <strong style="color: var(--text-secondary);">💡 Prompt location:</strong>
+          The analysis prompt is loaded from <code style="color: var(--accent-blue);">prompts/schema_analysis.md</code>
+          — edit that file to adjust analysis behaviour.
+          Results are saved to <code style="color: var(--accent-blue);">analyses/</code>.
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ── Document Viewer Modal ───────────────────────────────────────────── -->
+  <div class="viewer-overlay" id="viewerOverlay" onclick="closeViewer(event)">
+    <div class="viewer-panel" onclick="event.stopPropagation()">
+      <div class="viewer-header">
+        <h3 id="viewerTitle">Document</h3>
+        <button class="btn btn-secondary btn-sm" onclick="closeViewer()">✕ Close</button>
+      </div>
+      <div id="viewerProvenance"
+        style="display: none; padding: 10px 20px; background: rgba(99,102,241,0.08); border-bottom: 1px solid var(--border-subtle); font-size: 12px; color: var(--text-secondary); display: none;">
+        <!-- Populated by viewDocument -->
+      </div>
+      <div class="viewer-body">
+        <pre id="viewerContent"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toast Container ─────────────────────────────────────────────────── -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    /* ── State ──────────────────────────────────────────────────────────── */
+    const API = '';  // Same origin
+    let currentPage = 'ingest';
+    let documents = [];
+
+    /* ── Navigation ────────────────────────────────────────────────────── */
+    function navigateTo(page) {
+      document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.remove('active'));
+
+      const pageEl = document.getElementById(`page-${page}`);
+      const navEl = document.querySelector(`.nav-item[data-page="${page}"]`);
+
+      if (pageEl) {
+        pageEl.style.display = 'block';
+        pageEl.classList.add('fade-in');
+      }
+      if (navEl) navEl.classList.add('active');
+
+      currentPage = page;
+      refreshDocuments();
+    }
+
+    /* ── API Calls ─────────────────────────────────────────────────────── */
+    async function fetchStatus() {
+      try {
+        const res = await fetch(`${API}/api/status`);
+        const data = await res.json();
+        document.getElementById('statInputs').textContent = data.inputCount;
+        document.getElementById('statOutputs').textContent = data.outputCount;
+        document.getElementById('statSchemas').textContent = data.schemaCount;
+        document.getElementById('docCountBadge').textContent = data.outputCount;
+        document.getElementById('schemaCountBadge').textContent = data.schemaCount;
+      } catch (e) {
+        console.error('Status fetch failed:', e);
+      }
+    }
+
+    async function refreshDocuments() {
+      try {
+        const res = await fetch(`${API}/api/documents`);
+        documents = await res.json();
+        renderDocumentTable('documentTable');
+        renderDocumentTable('documentTableFull');
+        fetchStatus();
+      } catch (e) {
+        console.error('Document list failed:', e);
+      }
+    }
+
+    async function fetchSchemas() {
+      try {
+        const res = await fetch(`${API}/api/schemas`);
+        const schemas = await res.json();
+        renderSchemas(schemas);
+      } catch (e) {
+        console.error('Schema list failed:', e);
+      }
+    }
+
+    /* ── File Upload ───────────────────────────────────────────────────── */
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    fileInput.addEventListener('change', () => {
+      handleFiles(fileInput.files);
+      fileInput.value = '';
+    });
+
+    async function handleFiles(files) {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+          const res = await fetch(`${API}/api/upload`, { method: 'POST', body: formData });
+          const data = await res.json();
+
+          if (res.ok) {
+            showToast('success', `Uploaded: ${data.filename}`);
+          } else {
+            showToast('error', data.detail || 'Upload failed');
+          }
+        } catch (e) {
+          showToast('error', `Upload failed: ${e.message}`);
+        }
+      }
+      refreshDocuments();
+    }
+
+    /* ── URL Fetch ─────────────────────────────────────────────────────── */
+    async function fetchUrl() {
+      const urlInput = document.getElementById('urlInput');
+      const url = urlInput.value.trim();
+      if (!url) { showToast('error', 'Please enter a URL'); return; }
+
+      const btn = document.getElementById('fetchUrlBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Fetching…';
+
+      try {
+        const res = await fetch(`${API}/api/convert/url`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url,
+            includeLinks: document.getElementById('includeLinks').checked,
+            includeImages: document.getElementById('includeImages').checked,
+          }),
+        });
+        const data = await res.json();
+
+        if (data.status === 'done') {
+          showToast('success', `Converted: ${data.outputPath}`);
+          urlInput.value = '';
+        } else {
+          showToast('error', data.errorMessage || 'Conversion failed');
+        }
+      } catch (e) {
+        showToast('error', `Fetch failed: ${e.message}`);
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = 'Fetch';
+      refreshDocuments();
+    }
+
+    // Allow Enter key in URL input
+    document.getElementById('urlInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') fetchUrl();
+    });
+
+    /* ── File Conversion ───────────────────────────────────────────────── */
+    async function convertFile(filename) {
+      showToast('info', `Converting ${filename}…`);
+
+      try {
+        const res = await fetch(
+          `${API}/api/convert/file?filename=${encodeURIComponent(filename)}&fast=true`,
+          { method: 'POST' }
+        );
+        const data = await res.json();
+
+        if (data.status === 'done') {
+          showToast('success', `Converted: ${filename}`);
+        } else {
+          showToast('error', data.errorMessage || 'Conversion failed');
+        }
+      } catch (e) {
+        showToast('error', `Conversion failed: ${e.message}`);
+      }
+
+      refreshDocuments();
+    }
+
+    async function convertBatch() {
+      showToast('info', 'Starting batch conversion…');
+
+      try {
+        const res = await fetch(`${API}/api/convert/batch?fast=true`, { method: 'POST' });
+        const data = await res.json();
+
+        const statusEl = document.getElementById('batchStatus');
+        statusEl.style.display = 'block';
+        statusEl.innerHTML = `
+        <div style="font-size: 13px; color: var(--text-secondary);">
+          <strong>${data.converted}</strong> converted,
+          <strong>${data.errors}</strong> errors
+          out of <strong>${data.totalPending}</strong> pending files.
+        </div>
+      `;
+
+        showToast('success', `Batch complete: ${data.converted} converted`);
+      } catch (e) {
+        showToast('error', `Batch failed: ${e.message}`);
+      }
+
+      refreshDocuments();
+    }
+
+    /* ── Document Viewer ───────────────────────────────────────────────── */
+    async function viewDocument(filename) {
+      try {
+        const res = await fetch(`${API}/api/document/${encodeURIComponent(filename)}`);
+        const data = await res.json();
+
+        document.getElementById('viewerTitle').textContent = data.filename;
+        document.getElementById('viewerContent').textContent = data.content;
+
+        // Fetch and show provenance if available
+        const provBar = document.getElementById('viewerProvenance');
+        try {
+          const stem = data.filename.replace(/\.md$/, '');
+          const provRes = await fetch(`${API}/api/provenance/${encodeURIComponent(stem)}`);
+          if (provRes.ok) {
+            const prov = await provRes.json();
+            let provHtml = '';
+            if (prov.source_url) {
+              provHtml += `<span style="margin-right: 16px;">🔗 <strong>Source:</strong> <a href="${prov.source_url}" target="_blank" style="color: var(--accent-blue);">${prov.source_url}</a></span>`;
+            }
+            if (prov.source_type) {
+              provHtml += `<span style="margin-right: 16px;">📥 <strong>Acquired:</strong> ${prov.source_type}</span>`;
+            }
+            if (prov.fetched_at) {
+              provHtml += `<span>🕐 <strong>When:</strong> ${new Date(prov.fetched_at).toLocaleString()}</span>`;
+            }
+            if (provHtml) {
+              provBar.innerHTML = provHtml;
+              provBar.style.display = 'block';
+            } else {
+              provBar.style.display = 'none';
+            }
+          } else {
+            provBar.style.display = 'none';
+          }
+        } catch {
+          provBar.style.display = 'none';
+        }
+
+        document.getElementById('viewerOverlay').classList.add('visible');
+      } catch (e) {
+        showToast('error', `Could not load document: ${e.message}`);
+      }
+    }
+
+    function closeViewer(event) {
+      if (event && event.target !== event.currentTarget) return;
+      document.getElementById('viewerOverlay').classList.remove('visible');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeViewer();
+    });
+
+    /* ── Rendering ─────────────────────────────────────────────────────── */
+    const SOURCE_ICONS = {
+      pdf: '📕', url: '🌐', html: '🌐', image: '🖼️',
+      docx: '📝', markdown: '📄',
+    };
+
+    function formatBytes(bytes) {
+      if (!bytes) return '—';
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / 1048576).toFixed(1)} MB`;
+    }
+
+    function renderDocumentTable(containerId) {
+      const container = document.getElementById(containerId);
+      if (!documents.length) {
+        container.innerHTML = `
+        <div class="empty-state">
+          <span class="icon">📭</span>
+          <div class="title">No documents yet</div>
+          <div class="desc">Upload files or fetch URLs to get started</div>
+        </div>`;
+        return;
+      }
+
+      let html = `<table class="doc-table">
+      <thead><tr>
+        <th>Document</th>
+        <th>Type</th>
+        <th>Source</th>
+        <th>Status</th>
+        <th>Size</th>
+        <th>Actions</th>
+      </tr></thead><tbody>`;
+
+      for (const doc of documents) {
+        const icon = SOURCE_ICONS[doc.sourceType] || '📄';
+        const statusClass = doc.status;
+
+        html += `<tr>
+        <td>
+          <div class="doc-name">
+            <span class="source-icon">${icon}</span>
+            <span class="name-text" title="${doc.filename}">${doc.filename}</span>
+          </div>
+        </td>
+        <td><span class="type-badge ${doc.sourceType}">${doc.sourceType.toUpperCase()}</span></td>
+        <td class="size-text">${doc.sourceUrl ? `<a href="${doc.sourceUrl}" target="_blank" title="${doc.sourceUrl}" style="color: var(--accent-blue); text-decoration: none;">🔗 link</a>` : '<span style="color: var(--text-muted);">—</span>'}</td>
+        <td><span class="status-pill ${statusClass}">${doc.status}</span></td>
+        <td class="size-text">${formatBytes(doc.outputSize || doc.fileSize)}</td>
+        <td class="actions">`;
+
+        if (doc.status === 'done') {
+          html += `<button class="btn btn-secondary btn-sm" onclick="viewDocument('${doc.filename}')">View</button>`;
+          html += `<button class="btn btn-primary btn-sm" id="analyse-${doc.filename.replace(/[^a-zA-Z0-9]/g, '_')}" onclick="analyseForSchema('${doc.outputPath}')">🔬 Analyse</button>`;
+          html += `<button class="btn btn-secondary btn-sm" id="meta-${doc.filename.replace(/[^a-zA-Z0-9]/g, '_')}" onclick="extractDocMetadata('${doc.outputPath}')" title="Extract document metadata (org, author, date) via LLM">📋 Metadata</button>`;
+        } else if (doc.status === 'pending') {
+          html += `<button class="btn btn-primary btn-sm" onclick="convertFile('${doc.inputPath ? doc.inputPath.split(/[\\\\/]/).pop() : doc.filename}')">Convert</button>`;
+        } else if (doc.status === 'unsupported') {
+          html += `<span style="font-size:11px; color: var(--text-muted);">Coming soon</span>`;
+        }
+
+        html += `</td></tr>`;
+      }
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    function renderSchemas(schemas) {
+      const container = document.getElementById('schemaList');
+      if (!schemas.length) {
+        container.innerHTML = `
+        <div class="empty-state" style="grid-column: 1 / -1;">
+          <span class="icon">🧬</span>
+          <div class="title">No schemas found</div>
+          <div class="desc">Place .yaml or .yml files in the schemas/ directory</div>
+        </div>`;
+        return;
+      }
+
+      container.innerHTML = schemas.map(s => `
+      <div class="schema-card" onclick="viewDocument('${s.path}')">
+        <div class="name">🧬 ${s.filename}</div>
+        <div class="meta">${s.lines} lines · ${formatBytes(s.size)}</div>
+      </div>
+    `).join('');
+    }
+
+    /* ── Schema Analysis ───────────────────────────────────────────────── */
+    async function analyseForSchema(outputPath) {
+      showToast('info', 'Starting schema analysis — this may take 15–30 seconds…');
+
+      // Find and disable the button
+      const btns = document.querySelectorAll('.btn-primary.btn-sm');
+      let triggerBtn = null;
+      btns.forEach(b => {
+        if (b.textContent.includes('Analyse') && b.onclick && b.getAttribute('onclick')?.includes(outputPath)) {
+          triggerBtn = b;
+        }
+      });
+      if (triggerBtn) {
+        triggerBtn.disabled = true;
+        triggerBtn.innerHTML = '<span class="spinner"></span> Analysing…';
+      }
+
+      try {
+        const res = await fetch(`${API}/api/analyse`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ documentPath: outputPath }),
+        });
+        const data = await res.json();
+
+        if (data.errorMessage) {
+          showToast('error', data.errorMessage);
+        } else {
+          showToast('success', `Analysis saved to: ${data.savedTo}`);
+          // Show the result in the viewer
+          document.getElementById('viewerTitle').textContent = `Analysis: ${data.documentFilename}`;
+          document.getElementById('viewerContent').textContent = data.analysisYaml;
+          document.getElementById('viewerOverlay').classList.add('visible');
+          refreshAnalyses();
+        }
+      } catch (e) {
+        showToast('error', `Analysis failed: ${e.message}`);
+      }
+
+      if (triggerBtn) {
+        triggerBtn.disabled = false;
+        triggerBtn.innerHTML = '🔬 Analyse';
+      }
+    }
+
+    /* ── Metadata Extraction ───────────────────────────────────────────── */
+    async function extractDocMetadata(outputPath) {
+      showToast('info', 'Extracting document metadata — this may take 15–30 seconds…');
+
+      // Find and disable the button
+      const btns = document.querySelectorAll('.btn-secondary.btn-sm');
+      let triggerBtn = null;
+      btns.forEach(b => {
+        if (b.textContent.includes('Metadata') && b.getAttribute('onclick')?.includes(outputPath)) {
+          triggerBtn = b;
+        }
+      });
+      if (triggerBtn) {
+        triggerBtn.disabled = true;
+        triggerBtn.innerHTML = '<span class="spinner"></span> Extracting…';
+      }
+
+      try {
+        const res = await fetch(`${API}/api/extract-metadata`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ documentPath: outputPath }),
+        });
+        const data = await res.json();
+
+        if (data.errorMessage) {
+          showToast('error', data.errorMessage);
+        } else {
+          showToast('success', `Metadata extracted and saved to provenance record`);
+          // Show the result in the viewer
+          document.getElementById('viewerTitle').textContent = `Metadata: ${data.documentFilename}`;
+          document.getElementById('viewerContent').textContent = data.rawYaml;
+          document.getElementById('viewerProvenance').style.display = 'none';
+          document.getElementById('viewerOverlay').classList.add('visible');
+          // Refresh documents to update Source column
+          refreshDocuments();
+        }
+      } catch (e) {
+        showToast('error', `Metadata extraction failed: ${e.message}`);
+      }
+
+      if (triggerBtn) {
+        triggerBtn.disabled = false;
+        triggerBtn.innerHTML = '📋 Metadata';
+      }
+    }
+
+    async function refreshAnalyses() {
+      try {
+        const res = await fetch(`${API}/api/analyses`);
+        const analyses = await res.json();
+        document.getElementById('analysisCountBadge').textContent = analyses.length;
+        renderAnalysisTable(analyses);
+      } catch (e) {
+        console.error('Analysis list failed:', e);
+      }
+    }
+
+    function renderAnalysisTable(analyses) {
+      const container = document.getElementById('analysisTable');
+      if (!container) return;
+      if (!analyses.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span class="icon">🔬</span>
+            <div class="title">No analyses yet</div>
+            <div class="desc">Click "Analyse" on a converted document to generate schema proposals</div>
+          </div>`;
+        return;
+      }
+
+      let html = `<table class="doc-table">
+        <thead><tr>
+          <th>Analysis</th>
+          <th>Size</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr></thead><tbody>`;
+
+      for (const a of analyses) {
+        const date = new Date(a.createdAt).toLocaleString();
+        html += `<tr>
+          <td>
+            <div class="doc-name">
+              <span class="source-icon">🔬</span>
+              <span class="name-text" title="${a.filename}">${a.filename}</span>
+            </div>
+          </td>
+          <td class="size-text">${formatBytes(a.size)}</td>
+          <td class="size-text">${date}</td>
+          <td class="actions">
+            <button class="btn btn-secondary btn-sm" onclick="viewAnalysis('${a.filename}')">View</button>
+          </td>
+        </tr>`;
+      }
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    async function viewAnalysis(filename) {
+      try {
+        const res = await fetch(`${API}/api/analysis/${encodeURIComponent(filename)}`);
+        const data = await res.json();
+        document.getElementById('viewerTitle').textContent = data.filename;
+        document.getElementById('viewerContent').textContent = data.content;
+        document.getElementById('viewerOverlay').classList.add('visible');
+      } catch (e) {
+        showToast('error', `Could not load analysis: ${e.message}`);
+      }
+    }
+
+    /* ── Toast Notifications ───────────────────────────────────────────── */
+    function showToast(type, message) {
+      const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `<span class="icon">${icons[type]}</span><span class="message">${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+
+    /* ── Init ───────────────────────────────────────────────────────────── */
+    fetchStatus();
+    refreshDocuments();
+    fetchSchemas();
+    refreshAnalyses();
+  </script>
+</body>
+
+</html>
