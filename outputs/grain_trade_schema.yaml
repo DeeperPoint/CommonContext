@@ -1,0 +1,819 @@
+# Copyright (c) 2026 Mustafa Uzumeri. All rights reserved.
+#
+# Grain Trade Domain Schema — derived from GAFTA Contract No. 27
+# (Canadian and US Grain in Bulk — Cargoes Tale Quale — CIF/CIFFO/C&F/C&FFO Terms)
+#
+# Purpose: Knowledge Slot reference schema for a grain trading marketplace.
+# This defines the domain vocabulary, entity structures, and trade parameters
+# that the AI uses when assisting participants in discovery, matching, and
+# deal structuring.
+#
+# Source: GAFTA Contract No. 27, 2025 edition
+# Generated from: outputs/27_2025.md (marker-pdf conversion)
+
+schema_version: "1.0"
+domain: grain_trade
+source_authority: "GAFTA — The Grain and Feed Trade Association"
+governing_law: "Laws of England"
+arbitration_body: "GAFTA Arbitration Rules No. 125"
+
+# ---------------------------------------------------------------------------
+# 1. GOODS — What is being traded
+# ---------------------------------------------------------------------------
+goods:
+  description: >
+    The commodity being transacted. Grain trades specify origin, type, grade,
+    and form. The GAFTA contract covers Canadian and US grain in bulk.
+  fields:
+    commodity_type:
+      type: string
+      description: "Grain type (e.g. wheat, barley, canola, corn, oats, rye, soybeans)"
+      required: true
+      examples: ["Hard Red Spring Wheat", "Durum Wheat", "Yellow Corn", "Malting Barley"]
+
+    origin_country:
+      type: string
+      description: "Country of origin"
+      allowed_values: ["Canada", "United States of America"]
+      required: true
+
+    grade:
+      type: string
+      description: >
+        Official grade designation. For Canadian grain, grades are set by the
+        Canadian Grain Commission (e.g. No. 1 CWRS, No. 2 CWAD). For US grain,
+        grades follow USDA/FGIS standards.
+      required: false
+
+    crop_year:
+      type: string
+      description: "Harvest year (e.g. 2025/2026)"
+      required: false
+
+    form:
+      type: enum
+      description: "Physical form of the commodity"
+      allowed_values: ["bulk", "bagged", "containerised"]
+      default: "bulk"
+
+    description:
+      type: text
+      description: "Free-text description of the commodity, including any special characteristics"
+      required: false
+
+# ---------------------------------------------------------------------------
+# 2. QUANTITY
+# ---------------------------------------------------------------------------
+quantity:
+  description: >
+    Trade volume specification. GAFTA contracts allow a standard tolerance
+    of ±5%, with a further optional ±5% at market price settlement.
+  fields:
+    amount:
+      type: number
+      description: "Nominal quantity"
+      required: true
+
+    unit:
+      type: enum
+      description: "Unit of measurement"
+      allowed_values:
+        - "metric_tonne"       # 1,000 kg (standard international)
+        - "long_ton"           # 1,016 kg / 2,240 lbs (imperial)
+        - "bushel"             # volume-based, varies by commodity
+      required: true
+
+    tolerance_percent:
+      type: number
+      description: "Standard tolerance (±%) on contract quantity"
+      default: 5.0
+
+    additional_tolerance_percent:
+      type: number
+      description: >
+        Further optional tolerance (±%). Excess or deficiency over the
+        standard tolerance settled at market price on the date of the last
+        bill of lading.
+      default: 5.0
+
+# ---------------------------------------------------------------------------
+# 3. PRICE AND DESTINATION
+# ---------------------------------------------------------------------------
+pricing:
+  description: >
+    Price terms and destination. Grain trades use standard Incoterms-like
+    delivery terms (CIF, CIFFO, C&F, C&FFO) though GAFTA explicitly excludes
+    Incoterms in favour of its own definitions.
+  fields:
+    price_per_unit:
+      type: number
+      description: "Price per unit of quantity"
+      required: true
+
+    currency:
+      type: string
+      description: "ISO 4217 currency code"
+      required: true
+      examples: ["USD", "CAD", "EUR", "GBP"]
+
+    price_unit:
+      type: enum
+      description: "Unit the price is quoted against"
+      allowed_values: ["metric_tonne", "long_ton", "bushel"]
+      required: true
+
+    weight_basis:
+      type: enum
+      description: "Whether price is on gross or net weight"
+      allowed_values: ["gross", "net"]
+      default: "gross"
+
+    delivery_terms:
+      type: enum
+      description: >
+        GAFTA delivery terms (NOT Incoterms — GAFTA excludes Incoterms
+        per Clause 29(d)). These define cost and risk allocation.
+      allowed_values:
+        - "CIF"    # Cost, Insurance & Freight — seller pays to destination
+        - "CIFFO"  # CIF Free Out — buyer pays discharge costs
+        - "C&F"    # Cost & Freight — buyer arranges insurance
+        - "C&FFO"  # C&F Free Out — buyer pays insurance + discharge
+      required: true
+
+    destination_port:
+      type: string
+      description: "Port of destination"
+      required: true
+
+# ---------------------------------------------------------------------------
+# 4. BROKERAGE
+# ---------------------------------------------------------------------------
+brokerage:
+  description: >
+    Commission payable to intermediaries. Due on mean contract quantity,
+    goods lost or not lost, contract fulfilled or not fulfilled.
+    Corresponds to Cosolvent's facilitator role.
+  fields:
+    rate_per_unit:
+      type: number
+      description: "Brokerage rate per tonne"
+      required: false
+
+    currency:
+      type: string
+      description: "Currency for brokerage"
+      required: false
+
+    paid_by:
+      type: enum
+      description: "Party responsible for brokerage payment"
+      allowed_values: ["seller", "buyer", "split"]
+      default: "seller"
+
+    payable_on:
+      type: enum
+      description: "When brokerage becomes due"
+      allowed_values:
+        - "document_exchange"           # Day shipping documents are exchanged
+        - "30_days_after_appropriation"  # If goods not appropriated
+      default: "document_exchange"
+
+# ---------------------------------------------------------------------------
+# 5. QUALITY
+# ---------------------------------------------------------------------------
+quality:
+  description: >
+    Quality specifications and determination method. Three mutually exclusive
+    basis options: warranted at discharge, certified at loading, or by sample.
+  fields:
+    basis:
+      type: enum
+      description: "How quality is determined"
+      allowed_values:
+        - "warranted_at_discharge"    # Warranted to contain at time/place of discharge
+        - "certificate_at_loading"    # Official inspection certificate at loading, final as to quality
+        - "sample_at_shipment"        # About as per sealed sample; 'about' = ±0.50% on contract price
+      required: true
+
+    specifications:
+      type: list
+      description: "List of quality parameters and their limits"
+      item_schema:
+        parameter:
+          type: string
+          description: "Quality parameter name (e.g. protein, moisture, test weight, dockage, falling number)"
+        min_value:
+          type: number
+          description: "Minimum acceptable value"
+        max_value:
+          type: number
+          description: "Maximum acceptable value"
+        unit:
+          type: string
+          description: "Unit of measurement (e.g. %, kg/hl, seconds)"
+
+    certificate_authority:
+      type: string
+      description: "Issuing authority for quality certificates (e.g. Canadian Grain Commission, FGIS)"
+      required: false
+
+    rejection_rights:
+      type: text
+      description: >
+        Buyers cannot reject a higher grade of the same colour and description.
+        Difference in quality does not entitle rejection except under
+        arbitration award. Condition: shipment in good condition, with
+        due regard for time of year.
+      default: "Per GAFTA Contract No. 27, Clause 5"
+
+    sample_holder:
+      type: string
+      description: "Entity holding the sealed reference sample (if basis is sample_at_shipment)"
+      required: false
+
+# ---------------------------------------------------------------------------
+# 6. SHIPMENT
+# ---------------------------------------------------------------------------
+shipment:
+  description: >
+    Shipping period, ports, vessel requirements, and extension provisions.
+  fields:
+    period_start:
+      type: date
+      description: "First date of the shipment window"
+      required: true
+
+    period_end:
+      type: date
+      description: "Last date of the shipment window"
+      required: true
+
+    ports_of_shipment:
+      type: list
+      description: >
+        Eligible loading ports. GAFTA 27 covers US and Canadian ports
+        including Lake Ports and Hudson River (not above Albany),
+        excluding Pacific and Hudson Bay ports.
+      item_type: string
+
+    excluded_ports:
+      type: list
+      description: "Explicitly excluded ports"
+      item_type: string
+      default: ["Pacific ports", "Hudson Bay ports"]
+
+    vessel_classification:
+      type: text
+      description: >
+        First class mechanically self-propelled vessel(s) suitable for
+        contract goods, classed per Institute Classification Clause
+        of the International Underwriting Association.
+      default: "Per IUA classification in force at time of shipment"
+
+    named_vessel:
+      type: string
+      description: "If sold by named vessel, the vessel name"
+      required: false
+
+    extension_allowed:
+      type: boolean
+      description: >
+        Whether the shipment period can be extended. Allowed for periods
+        of 31 days or less, up to 8 additional days with notice and
+        price allowances.
+      default: true
+
+    extension_allowances:
+      type: object
+      description: "Price reductions for using extension days"
+      fields:
+        days_1_to_4: 0.50   # percent of gross contract price
+        days_5_to_6: 1.00
+        days_7_to_8: 1.50
+
+# ---------------------------------------------------------------------------
+# 7. APPROPRIATION (Cargo Allocation)
+# ---------------------------------------------------------------------------
+appropriation:
+  description: >
+    The process by which specific cargo is allocated to a contract.
+    Notice must include vessel name, presumed weight, and bill of lading date.
+  fields:
+    notice_deadline_business_days:
+      type: integer
+      description: "Business days from last bill of lading to serve notice"
+      default: 5
+
+    minimum_tender_tonnes:
+      type: number
+      description: >
+        Minimum quantity per vessel. Below this, buyers entitled to refund
+        of extra sampling, analysis and lighterage expenses.
+      default: 95
+
+    bill_of_lading_date:
+      type: date
+      description: "Actual or presumed date of bill of lading"
+      required: false
+
+# ---------------------------------------------------------------------------
+# 8. PAYMENT
+# ---------------------------------------------------------------------------
+payment:
+  description: >
+    Payment terms, document requirements, and interest provisions.
+  fields:
+    advance_percentage:
+      type: number
+      description: "Percentage of invoice amount paid in advance"
+      required: false
+
+    payment_currency:
+      type: string
+      description: "Currency of payment"
+      required: true
+
+    payment_method:
+      type: enum
+      description: "Method of payment"
+      allowed_values:
+        - "cash_against_documents"  # Payment on presentation of shipping docs
+        - "letter_of_credit"
+        - "deferred_payment"
+        - "open_account"
+      default: "cash_against_documents"
+
+    required_documents:
+      type: list
+      description: "Shipping documents required for payment"
+      default:
+        - "Commercial invoice"
+        - "Full set of on-board bills of lading (negotiable/transferable)"
+        - "Insurance policy/certificate/letter (CIF/CIFFO terms)"
+      item_type: string
+
+    interest_on_late_payment:
+      type: text
+      description: >
+        Interest charged on unreasonable payment delays, at rate appropriate
+        to the currency involved. Disputes on rate settled by arbitration.
+
+    collection_costs:
+      type: enum
+      description: "Party bearing costs of payment collection"
+      allowed_values: ["seller", "buyer"]
+      default: "seller"
+
+# ---------------------------------------------------------------------------
+# 9. DUTIES, TAXES, LEVIES
+# ---------------------------------------------------------------------------
+duties_and_taxes:
+  description: "Allocation of customs duties, taxes, and levies between parties."
+  fields:
+    export_duties:
+      type: enum
+      description: "Party bearing export duties, taxes, levies in country of origin"
+      allowed_values: ["seller", "buyer"]
+      default: "seller"
+
+    import_duties:
+      type: enum
+      description: "Party bearing import duties, taxes, levies in country of destination"
+      allowed_values: ["seller", "buyer"]
+      default: "buyer"
+
+    customs_clearance_export:
+      type: enum
+      description: "Party responsible for export customs clearance"
+      allowed_values: ["seller", "buyer"]
+      default: "seller"
+
+# ---------------------------------------------------------------------------
+# 10. DISCHARGE
+# ---------------------------------------------------------------------------
+discharge:
+  description: >
+    Terms for unloading cargo at destination. Cost allocation depends on
+    delivery terms (CIF vs CIFFO).
+  fields:
+    method:
+      type: enum
+      description: "Permitted discharge methods"
+      allowed_values: ["grab", "pneumatic", "any"]
+      default: "any"
+
+    cost_allocation:
+      type: text
+      description: >
+        CIF/C&F: hold to ship's rail = seller; rail overboard = buyer.
+        CIFFO/C&FFO: all discharge costs = buyer.
+
+    demurrage_rate:
+      type: number
+      description: "Daily demurrage rate (per charter party or time charter daily hire)"
+      required: false
+
+    despatch_rate:
+      type: number
+      description: "Daily despatch rate (typically half demurrage)"
+      required: false
+
+    discharge_rate_tonnes_per_day:
+      type: number
+      description: "Average discharge rate in tonnes per Weather Working Day (WWD SSHEX UU)"
+      required: false
+
+# ---------------------------------------------------------------------------
+# 11. WEIGHING AND DEFICIENCY
+# ---------------------------------------------------------------------------
+weighing:
+  description: >
+    Weight determination rules per GAFTA Weighing Rules No. 123.
+  fields:
+    basis:
+      type: enum
+      description: "Where final weight is determined"
+      allowed_values:
+        - "delivered_weights_at_discharge"  # Gross delivered weights, buyer's expense
+        - "loading_weights"                  # Per GAFTA superintendent, seller's expense
+      default: "delivered_weights_at_discharge"
+
+    deficiency_settlement:
+      type: text
+      description: >
+        Deficiency vs bill of lading weight paid by seller.
+        Excess over bill of lading weight paid by buyer. Both at contract price.
+
+    moisture_exclusion:
+      type: text
+      description: "No payment for weight increase due to water and/or oil during voyage."
+
+# ---------------------------------------------------------------------------
+# 12. SAMPLING AND ANALYSIS
+# ---------------------------------------------------------------------------
+sampling:
+  description: >
+    Sample collection and analysis rules per GAFTA Sampling Rules No. 124.
+  fields:
+    timing:
+      type: enum
+      description: "When samples are taken"
+      allowed_values:
+        - "at_discharge"   # On or before removal from ship/quay
+        - "at_loading"     # If quality final at loading agreed
+      default: "at_discharge"
+
+    superintendent_registry:
+      type: string
+      description: "Registry from which superintendents must be appointed"
+      default: "GAFTA Register of Superintendents"
+
+    analyst_registry:
+      type: string
+      description: "Registry from which analysts must be appointed"
+      default: "GAFTA Register of Analysts"
+
+    methods:
+      type: string
+      description: "Analysis methods per GAFTA Methods of Analysis No. 130"
+      default: "GAFTA No. 130"
+
+# ---------------------------------------------------------------------------
+# 13. INSURANCE
+# ---------------------------------------------------------------------------
+insurance:
+  description: >
+    Insurance requirements differ by delivery terms. CIF/CIFFO: seller provides.
+    C&F/C&FFO: buyer provides.
+  fields:
+    provider:
+      type: enum
+      description: "Party responsible for arranging insurance"
+      allowed_values: ["seller", "buyer"]
+      notes: "CIF/CIFFO = seller; C&F/C&FFO = buyer"
+
+    risks_covered:
+      type: list
+      description: "Insurance coverage requirements"
+      default:
+        - "Cargo Clauses (WA) with average payable, 3% franchise or better"
+        - "War Clauses (Cargo)"
+        - "Strikes, Riots and Civil Commotions Clauses (Cargo)"
+        - "Australian, Canadian, South African and US Acts"
+
+    insured_value:
+      type: text
+      description: "Not less than 2% over invoice amount including freight"
+      default: "Invoice + 2%"
+
+    insurer_domicile:
+      type: text
+      description: >
+        First class underwriters/companies domiciled or carrying on business
+        in the UK, or accepting British domicile with London address for
+        service of process.
+
+    war_strike_premium_threshold:
+      type: number
+      description: "Premium percentage above which excess is for buyer's account"
+      default: 0.50
+
+# ---------------------------------------------------------------------------
+# 14. FORCE MAJEURE
+# ---------------------------------------------------------------------------
+force_majeure:
+  description: >
+    Events that suspend performance. Enumerated list from GAFTA Clause 21.
+  fields:
+    qualifying_events:
+      type: list
+      description: "Events constituting force majeure"
+      default:
+        - "Prohibition of export or government restriction"
+        - "Blockade"
+        - "Acts of terrorism"
+        - "Hostilities"
+        - "Strike, lockout or combination of workmen"
+        - "Riot or civil commotion"
+        - "Breakdown of machinery"
+        - "Fire"
+        - "Ice"
+        - "Act of God"
+        - "Unforeseeable impediments to transportation or navigation"
+
+    notice_deadline_days:
+      type: integer
+      description: >
+        Days from occurrence to serve notice (or 21 days before shipment
+        period, whichever is later)
+      default: 7
+
+    cancellation_waiting_period_days:
+      type: integer
+      description: "Days after end of shipment period before buyer can cancel"
+      default: 21
+
+    extension_after_cancellation_option_days:
+      type: integer
+      description: "Additional days contract remains in force if buyer doesn't cancel"
+      default: 14
+
+# ---------------------------------------------------------------------------
+# 15. DEFAULT AND INSOLVENCY
+# ---------------------------------------------------------------------------
+default:
+  description: >
+    Remedies when a party fails to perform. The non-defaulting party may
+    sell or purchase against the defaulter.
+  fields:
+    default_trigger:
+      type: text
+      description: >
+        Seller deemed in default if no appropriation notice served by
+        5th business day after last appropriation day.
+
+    damages_basis:
+      type: text
+      description: >
+        Difference between contract price and default price (market or
+        actual sale/purchase). On appropriated quantity if any, otherwise
+        mean contract quantity. Loss of profit on sub-contracts excluded
+        unless arbitrator allows.
+
+insolvency:
+  description: >
+    Provisions triggered by acts of insolvency by either party.
+    Contract closes at market price following notice.
+  fields:
+    acts_of_insolvency:
+      type: list
+      description: "Events constituting an act of insolvency"
+      default:
+        - "Suspension of payments"
+        - "Notification of inability to meet debts"
+        - "Meeting of creditors"
+        - "Voluntary arrangement or restructuring plan"
+        - "Moratorium (Part A1 Insolvency Act 1986)"
+        - "Administration notice or order"
+        - "Winding up petition or order"
+        - "Receiver or manager appointed"
+        - "Liquidation (other than reconstruction/amalgamation)"
+        - "Interim order (Section 252 Insolvency Act 1986)"
+        - "Bankruptcy petition"
+
+    notice_deadline_business_days:
+      type: integer
+      description: "Business days to serve notice of act of insolvency"
+      default: 2
+
+    closeout_basis:
+      type: text
+      description: "Market price on business day following notice service"
+
+# ---------------------------------------------------------------------------
+# 16. DISPUTE RESOLUTION
+# ---------------------------------------------------------------------------
+dispute_resolution:
+  description: >
+    All disputes determined by GAFTA arbitration. Courts of England have
+    exclusive jurisdiction only for ancillary relief and enforcement.
+  fields:
+    arbitration_rules:
+      type: string
+      description: "Applicable arbitration rules"
+      default: "GAFTA Arbitration Rules No. 125"
+
+    jurisdiction:
+      type: string
+      description: "Court jurisdiction for ancillary relief"
+      default: "Courts of England"
+
+    domicile_for_service:
+      type: string
+      description: "Deemed domicile for service of proceedings"
+      default: "GAFTA, 9 Lincoln's Inn Fields, London WC2A 3BP"
+
+# ---------------------------------------------------------------------------
+# 17. CIRCLE TRADING
+# ---------------------------------------------------------------------------
+circle:
+  description: >
+    When sellers re-purchase the same goods from their buyers (directly
+    or through a chain), a circle exists. Settlement is by invoice
+    difference against the lowest invoice in the circle, not by delivery.
+  fields:
+    same_goods_criteria:
+      type: list
+      description: "Criteria for goods to be considered 'the same' in a circle"
+      default:
+        - "Same description"
+        - "Same country of origin"
+        - "Same quality"
+        - "Same analysis warranty (if applicable)"
+        - "Same port(s) of destination"
+        - "Same period of shipment"
+
+    settlement_basis:
+      type: enum
+      description: "Settlement quantity basis"
+      allowed_values:
+        - "mean_contract_quantity"  # If circle established before appropriation
+        - "appropriated_quantity"   # If circle established after appropriation
+
+    settlement_deadline_days:
+      type: integer
+      description: "Days after last appropriation day for settlement payment"
+      default: 15
+
+# ---------------------------------------------------------------------------
+# 18. NOTICES
+# ---------------------------------------------------------------------------
+notices:
+  description: >
+    Communication requirements between parties.
+  fields:
+    permitted_methods:
+      type: list
+      description: "Acceptable notice methods"
+      default:
+        - "Email"
+        - "Other mutually recognised electronic communication"
+
+    business_day_cutoff:
+      type: string
+      description: "Time after which a notice is deemed received next business day"
+      default: "16:00"
+
+    burden_of_proof:
+      type: enum
+      description: "Party bearing burden of proving notice was transmitted"
+      allowed_values: ["sender"]
+      default: "sender"
+
+# ---------------------------------------------------------------------------
+# 19. PARTICIPANT ROLES (Cosolvent Mapping)
+# ---------------------------------------------------------------------------
+participant_roles:
+  description: >
+    Mapping of GAFTA contract parties to Cosolvent participant types.
+    This connects the domain schema to the marketplace framework.
+
+  supply:
+    label: "Seller"
+    description: >
+      The party offering grain for sale. May be a producer, cooperative,
+      elevator company, or export house.
+    typical_entities:
+      - "Grain producers / farmers"
+      - "Grain elevators"
+      - "Export companies"
+      - "Trading houses"
+      - "Producer cooperatives"
+
+  demand:
+    label: "Buyer"
+    description: >
+      The party purchasing grain. May be a miller, feed manufacturer,
+      food processor, or import agency.
+    typical_entities:
+      - "Flour mills"
+      - "Feed manufacturers"
+      - "Food processors"
+      - "Import agencies"
+      - "Commodity traders"
+      - "Government procurement agencies"
+
+  facilitator:
+    label: "Broker / Service Provider"
+    description: >
+      Intermediaries who facilitate the trade. GAFTA contracts explicitly
+      include brokers. Additional facilitator roles correspond to services
+      required to complete a transaction.
+    subtypes:
+      - role: "broker"
+        description: "Intervening broker who arranges the contract between buyer and seller"
+        gafta_clause: "Clause 4 — Brokerage"
+
+      - role: "shipping_agent"
+        description: "Arranges vessel nomination, freight, and shipping logistics"
+        gafta_clause: "Clauses 9–10 — Ship's Classification, Vessel Nomination"
+
+      - role: "insurance_broker"
+        description: "Arranges cargo insurance per GAFTA Insurance Terms No. 72"
+        gafta_clause: "Clause 20 — Insurance"
+
+      - role: "superintendent"
+        description: "Supervises sampling and weighing at loading or discharge"
+        gafta_clause: "Clauses 16, 18 — Weighing, Sampling"
+        registry: "GAFTA Register of Superintendents"
+
+      - role: "analyst"
+        description: "Performs quality analysis of sampled goods"
+        gafta_clause: "Clause 18 — Sampling, Analysis and Certificates"
+        registry: "GAFTA Register of Analysts"
+
+      - role: "fumigator"
+        description: "Provides fumigation services per GAFTA Fumigation Rules No. 132"
+        gafta_clause: "Clause 19 — Fumigation"
+
+      - role: "trade_finance"
+        description: "Provides letters of credit, payment guarantees, or financing"
+        gafta_clause: "Clause 13 — Payment"
+
+      - role: "customs_broker"
+        description: "Handles export and import customs clearance"
+        gafta_clause: "Clause 14 — Duties, Taxes, Levies"
+
+      - role: "legal_counsel"
+        description: "Advises on contract terms, disputes, and arbitration"
+        gafta_clause: "Clauses 25–28 — Default, Insolvency, Domicile, Arbitration"
+
+# ---------------------------------------------------------------------------
+# 20. REFERENCED GAFTA STANDARDS
+# ---------------------------------------------------------------------------
+referenced_standards:
+  description: >
+    Standards incorporated by reference into GAFTA Contract No. 27.
+    These are essential reference documents for the Knowledge Slot.
+  standards:
+    - id: "GAFTA_72"
+      title: "GAFTA Insurance Terms No. 72"
+      topic: "Insurance"
+
+    - id: "GAFTA_123"
+      title: "GAFTA Weighing Rules No. 123"
+      topic: "Weighing"
+
+    - id: "GAFTA_124"
+      title: "GAFTA Sampling Rules No. 124"
+      topic: "Sampling"
+
+    - id: "GAFTA_125"
+      title: "GAFTA Arbitration Rules No. 125"
+      topic: "Arbitration"
+
+    - id: "GAFTA_130"
+      title: "GAFTA Methods of Analysis No. 130"
+      topic: "Analysis methods"
+
+    - id: "GAFTA_132"
+      title: "GAFTA Fumigation Rules No. 132"
+      topic: "Fumigation"
+
+    - id: "IUA_CLASSIFICATION"
+      title: "Institute Classification Clause — International Underwriting Association"
+      topic: "Vessel classification"
+
+# ---------------------------------------------------------------------------
+# 21. EXCLUDED CONVENTIONS
+# ---------------------------------------------------------------------------
+excluded_conventions:
+  description: >
+    International conventions explicitly excluded by GAFTA Contract No. 27.
+    Important context for AI to avoid citing these as authoritative.
+  list:
+    - "Uniform Laws on International Sales Act 1967"
+    - "UN Convention on Contracts for the International Sale of Goods (CISG) 1980"
+    - "UN Convention on Prescription (Limitation) in International Sale of Goods 1974"
+    - "Incoterms"
+    - "Contract (Rights of Third Parties) Act 1999"
