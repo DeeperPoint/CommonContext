@@ -5,9 +5,9 @@ PDF to Markdown Converter
 Uses marker-pdf for high-quality conversion with layout detection.
 
 Usage:
-    .venv\Scripts\python.exe convert_pdf.py input.pdf
-    .venv\Scripts\python.exe convert_pdf.py input.pdf -o output.md
-    .venv\Scripts\python.exe convert_pdf.py input.pdf -o output.md --extract-images
+    .venv/Scripts/python.exe convert_pdf.py input.pdf
+    .venv/Scripts/python.exe convert_pdf.py input.pdf -o output.md
+    .venv/Scripts/python.exe convert_pdf.py input.pdf -o output.md --extract-images
 """
 
 import argparse
