@@ -5,9 +5,9 @@ PDF to Markdown Converter
 Uses marker-pdf for high-quality conversion with layout detection.
 
 Usage:
-    .venv312\Scripts\python.exe convert_pdf.py input.pdf
-    .venv312\Scripts\python.exe convert_pdf.py input.pdf -o output.md
-    .venv312\Scripts\python.exe convert_pdf.py input.pdf -o output.md --extract-images
+    .venv\Scripts\python.exe convert_pdf.py input.pdf
+    .venv\Scripts\python.exe convert_pdf.py input.pdf -o output.md
+    .venv\Scripts\python.exe convert_pdf.py input.pdf -o output.md --extract-images
 """
 
 import argparse
@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 from marker.converters.pdf import PdfConverter
+from marker.models import create_model_dict
 from marker.config.parser import ConfigParser
 
 
@@ -42,12 +43,19 @@ def convertPdfToMarkdown(inputPath: str, outputPath: str = None, extractImages: 
     print(f"Converting: {pdfPath}")
     print(f"Output:     {outputPath}")
 
-    configDict = {"output_format": "markdown"}
-    if extractImages:
-        configDict["extract_images"] = True
+    # Load ML models (first run downloads ~1-2 GB of model weights)
+    print("Loading models (this may take a while on first run)...")
+    artifactDict = create_model_dict()
 
+    configDict = {"output_format": "markdown"}
     configParser = ConfigParser(configDict)
-    converter = PdfConverter(config=configParser.generate_config_dict())
+
+    converter = PdfConverter(
+        artifact_dict=artifactDict,
+        config=configParser.generate_config_dict(),
+    )
+
+    print("Converting PDF...")
     rendered = converter(str(pdfPath))
 
     mdText = rendered.markdown
@@ -58,7 +66,7 @@ def convertPdfToMarkdown(inputPath: str, outputPath: str = None, extractImages: 
     print(f"Done! Written {len(mdText):,} characters to {outputPath}")
 
     # Save extracted images if any
-    if extractImages and rendered.images:
+    if extractImages and hasattr(rendered, 'images') and rendered.images:
         imageDir = outputPath.parent / f"{outputPath.stem}_images"
         imageDir.mkdir(parents=True, exist_ok=True)
         for imageName, imageData in rendered.images.items():
