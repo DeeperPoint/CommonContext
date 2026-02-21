@@ -116,7 +116,7 @@ This project curates the **content** side of the Knowledge Slot — the referenc
 
 | Deliverable                        | Format           | Description                                                           | Status                              |
 | ---------------------------------- | ---------------- | --------------------------------------------------------------------- | ----------------------------------- |
-| **Converted reference documents**  | Markdown         | PDF source documents converted to clean Markdown                      | `outputs/27_2025.md` ✅              |
+| **Converted reference documents**  | Markdown         | Source documents (PDF, HTML, CSV, XLSX) converted to clean Markdown   | `outputs/27_2025.md` ✅              |
 | **Domain schema**                  | YAML             | Structured vocabulary extracted from reference documents              | `schemas/grain_trade_schema.yaml` ✅ |
 | **Schema analysis results**        | YAML             | LLM-generated proposals for schema additions and refinements          | `analyses/` ✅                       |
 | **Analysis prompt template**       | Markdown         | Editable LLM prompt for schema extraction                             | `prompts/schema_analysis.md` ✅      |
@@ -169,6 +169,8 @@ This project curates the **content** side of the Knowledge Slot — the referenc
 - [x] YAML frontmatter injection — every output markdown includes `source_url` for downstream chunking
 - [x] LLM-assisted metadata extraction — imputes org, author, date, doc type for locally-uploaded files (`metadata_extractor.py`)
 - [x] Editable metadata extraction prompt (`prompts/metadata_extraction.md`)
+- [x] CSV and Excel (.xlsx) tabular data conversion — renders spreadsheets as Markdown tables with full provenance (`convert_tabular.py`)
+- [x] Docker packaging — `Dockerfile` + `docker-compose.yml` for deployment; local development workflow unchanged
 
 ### Phase 2 — Schema Enrichment
 

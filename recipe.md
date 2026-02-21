@@ -14,7 +14,7 @@
 
 The Knowledge Slot is a sponsor-curated reference library that sits alongside participant data in a Cosolvent marketplace deployment. It provides the domain knowledge that the AI uses to answer questions, validate compliance, support matching decisions, and generate contextual guidance.
 
-This recipe documents **how to build that library** — from raw source documents (PDFs, standards, contracts, regulations) through conversion, schema extraction, and structuring into a format the Knowledge Slot can ingest.
+This recipe documents **how to build that library** — from raw source documents (PDFs, spreadsheets, web pages, contracts, regulations) through conversion, schema extraction, and structuring into a format the Knowledge Slot can ingest.
 
 ### What the Knowledge Slot is NOT
 
@@ -142,6 +142,37 @@ When a document arrives as a local file (e.g., received by email, downloaded man
 7. In the GUI, results are shown in the document viewer and the Source column updates
 
 **Key insight:** This is designed for the ~5% of documents that arrive without a URL. For URL-sourced documents, the source URL is captured automatically during fetch. Metadata extraction can still be run on URL-sourced documents to enrich their provenance with title, organization, and other structured fields.
+
+### Step 2d — Tabular Data Conversion (CSV / Excel)
+
+Many domain reference sources include structured tabular data — pricing schedules, compliance checklists, grading tables, port specifications, and regulatory thresholds. These are often distributed as CSV files or Excel workbooks.
+
+**Tool:** `convert_tabular.py` — Python `csv` module (CSV) + `openpyxl` (XLSX)
+
+**GUI:** Upload a `.csv` or `.xlsx` file via the GUI and click Convert — works identically to PDF/HTML uploads.
+
+**CLI:**
+```powershell
+.venv\Scripts\python.exe convert_tabular.py inputs/data.csv
+.venv\Scripts\python.exe convert_tabular.py inputs/workbook.xlsx -o outputs/custom.md
+```
+
+**What it does:**
+
+- **CSV files** → a single GitHub-flavored Markdown table with auto-detected delimiter (comma, semicolon, tab, pipe)
+- **XLSX files** → one `## SheetName` section per worksheet, each containing a Markdown table
+
+**Output includes:**
+- YAML frontmatter with `source_file`, `row_count`, `column_count` (CSV) or `sheet_count`, `total_rows` (XLSX)
+- Properly escaped cell values (pipe characters, newlines)
+- Provenance tracking — identical to PDF and URL sources
+
+**When to use this:**
+- Compliance checklists and regulatory tables (e.g., MRL thresholds by destination country)
+- Port specifications and logistics schedules
+- Grading standards in tabular form
+- Pricing or tariff reference data
+- Any structured reference data distributed as spreadsheets
 
 ### Step 3 — Domain Schema Extraction
 
@@ -304,11 +335,12 @@ One contract yields more schema coverage than a dozen regulatory documents.
 
 ### Document Conversion
 
-| Tool                                         | Script           | Install                                     | Use Case                                               |
-| -------------------------------------------- | ---------------- | ------------------------------------------- | ------------------------------------------------------ |
-| `marker-pdf`                                 | `convert_pdf.py` | `pip install marker-pdf` (Python 3.12 venv) | High-quality PDF conversion with layout detection      |
-| `pymupdf4llm`                                | —                | `pip install pymupdf4llm`                   | Fast, lightweight PDF conversion for simpler documents |
-| `requests` + `BeautifulSoup` + `markdownify` | `convert_url.py` | Pre-installed in `.venv`                    | Web page scraping and conversion to Markdown           |
+| Tool                                         | Script               | Install                                     | Use Case                                               |
+| -------------------------------------------- | -------------------- | ------------------------------------------- | ------------------------------------------------------ |
+| `marker-pdf`                                 | `convert_pdf.py`     | `pip install marker-pdf` (Python 3.12 venv) | High-quality PDF conversion with layout detection      |
+| `pymupdf4llm`                                | —                    | `pip install pymupdf4llm`                   | Fast, lightweight PDF conversion for simpler documents |
+| `requests` + `BeautifulSoup` + `markdownify` | `convert_url.py`     | Pre-installed in `.venv`                    | Web page scraping and conversion to Markdown           |
+| `csv` (stdlib) + `openpyxl`                  | `convert_tabular.py` | `pip install openpyxl`                      | CSV and Excel (.xlsx) spreadsheets to Markdown tables  |
 
 ### Schema Extraction
 
@@ -320,23 +352,25 @@ One contract yields more schema coverage than a dozen regulatory documents.
 
 ### File Locations
 
-| File                  | Path                             | Description                                        |
-| --------------------- | -------------------------------- | -------------------------------------------------- |
-| PDF inputs            | `inputs/`                        | Raw PDF source documents                           |
-| Markdown outputs      | `outputs/`                       | Converted Markdown files (from PDFs and web pages) |
-| Domain schemas        | `schemas/`                       | YAML schema files extracted from contracts         |
-| Analysis results      | `analyses/`                      | LLM-generated schema proposals                     |
-| Provenance records    | `provenance/`                    | Source URL and acquisition metadata (JSON per doc) |
-| Analysis prompt       | `prompts/schema_analysis.md`     | Editable LLM prompt template                       |
-| Metadata prompt       | `prompts/metadata_extraction.md` | Editable LLM prompt for document metadata          |
-| Schema analyzer       | `schema_analyzer.py`             | LLM-assisted schema extraction engine              |
-| Metadata extractor    | `metadata_extractor.py`          | LLM-assisted document metadata extraction          |
-| Provenance tracker    | `provenance.py`                  | Records source URL and metadata for every document |
-| PDF conversion script | `convert_pdf.py`                 | marker-pdf wrapper                                 |
-| URL conversion script | `convert_url.py`                 | Web page scraper and Markdown converter            |
-| FastAPI server        | `server.py`                      | GUI backend wrapping all tools                     |
-| GUI interface         | `static/index.html`              | Single-page web application                        |
-| This recipe           | `recipe.md`                      | Process documentation (this file)                  |
+| File                       | Path                               | Description                                               |
+| -------------------------- | ---------------------------------- | --------------------------------------------------------- |
+| Source documents           | `inputs/`                          | Raw source files (PDF, HTML, CSV, XLSX, Markdown)         |
+| Markdown outputs           | `outputs/`                         | Converted Markdown files (from all supported input types) |
+| Domain schemas             | `schemas/`                         | YAML schema files extracted from contracts                |
+| Analysis results           | `analyses/`                        | LLM-generated schema proposals                            |
+| Provenance records         | `provenance/`                      | Source URL and acquisition metadata (JSON per doc)        |
+| Analysis prompt            | `prompts/schema_analysis.md`       | Editable LLM prompt template                              |
+| Metadata prompt            | `prompts/metadata_extraction.md`   | Editable LLM prompt for document metadata                 |
+| Schema analyzer            | `schema_analyzer.py`               | LLM-assisted schema extraction engine                     |
+| Metadata extractor         | `metadata_extractor.py`            | LLM-assisted document metadata extraction                 |
+| Provenance tracker         | `provenance.py`                    | Records source URL and metadata for every document        |
+| PDF/HTML conversion script | `convert_pdf.py`                   | marker-pdf / pymupdf4llm / markdownify wrapper            |
+| URL conversion script      | `convert_url.py`                   | Web page scraper and Markdown converter                   |
+| Tabular conversion script  | `convert_tabular.py`               | CSV and Excel (.xlsx) to Markdown table converter         |
+| FastAPI server             | `server.py`                        | GUI backend wrapping all tools                            |
+| GUI interface              | `static/index.html`                | Single-page web application                               |
+| Docker packaging           | `Dockerfile`, `docker-compose.yml` | Container packaging for deployment (local dev unchanged)  |
+| This recipe                | `recipe.md`                        | Process documentation (this file)                         |
 
 ---
 

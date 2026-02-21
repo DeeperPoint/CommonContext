@@ -16,6 +16,7 @@ Usage:
 from __future__ import annotations
 
 import logging
+import os
 import mimetypes
 import shutil
 import uuid
@@ -61,6 +62,8 @@ class SourceType(str, Enum):
     PDF = "pdf"
     URL = "url"
     HTML = "html"
+    CSV = "csv"
+    XLSX = "xlsx"
     IMAGE = "image"       # Future: OCR / vision extraction
     DOCX = "docx"         # Future: Word document conversion
     MARKDOWN = "markdown"  # Direct markdown import (no conversion needed)
@@ -79,11 +82,16 @@ EXTENSION_MAP: dict[str, SourceType] = {
     ".webp": SourceType.IMAGE,
     ".bmp": SourceType.IMAGE,
     ".docx": SourceType.DOCX,
+    ".csv": SourceType.CSV,
+    ".xlsx": SourceType.XLSX,
     ".md": SourceType.MARKDOWN,
 }
 
 # Source types that are implemented now
-IMPLEMENTED_TYPES = {SourceType.PDF, SourceType.HTML, SourceType.URL, SourceType.MARKDOWN}
+IMPLEMENTED_TYPES = {
+    SourceType.PDF, SourceType.HTML, SourceType.URL, SourceType.MARKDOWN,
+    SourceType.CSV, SourceType.XLSX,
+}
 
 
 # ── Data Models ────────────────────────────────────────────────────────────
@@ -318,6 +326,16 @@ async def convertFile(
             from convert_pdf import convertHtmlToMarkdown
             convertHtmlToMarkdown(inputPath, outputPath)
             conversionMethod = "markdownify"
+
+        elif sourceType == SourceType.CSV:
+            from convert_tabular import convertCsvToMarkdown
+            convertCsvToMarkdown(inputPath, outputPath)
+            conversionMethod = "csv_stdlib"
+
+        elif sourceType == SourceType.XLSX:
+            from convert_tabular import convertXlsxToMarkdown
+            convertXlsxToMarkdown(inputPath, outputPath)
+            conversionMethod = "openpyxl"
 
         elif sourceType == SourceType.MARKDOWN:
             # Direct copy — no conversion needed
@@ -798,8 +816,8 @@ if __name__ == "__main__":
 
     uvicorn.run(
         "server:app",
-        host="127.0.0.1",
-        port=8400,
-        reload=True,
+        host=os.environ.get("HOST", "127.0.0.1"),
+        port=int(os.environ.get("PORT", "8400")),
+        reload=os.environ.get("HOST", "127.0.0.1") == "127.0.0.1",
         log_level="info",
     )

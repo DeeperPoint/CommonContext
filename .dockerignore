@@ -1,0 +1,32 @@
+# Copyright (c) 2026 Mustafa Uzumeri. All rights reserved.
+#
+# .dockerignore — exclude from Docker build context
+
+# Virtual environment (large, not needed — deps installed in container)
+.venv/
+__pycache__/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Data directories (bind-mounted at runtime, not baked into image)
+inputs/
+outputs/
+provenance/
+analyses/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+
+# Documentation (not needed in container)
+README.md
+ROADMAP.md
+recipe.md
+docs/
+
+# Windows launcher
+launch-gui.bat

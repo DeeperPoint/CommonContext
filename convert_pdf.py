@@ -27,7 +27,7 @@ import time
 from pathlib import Path
 
 # Supported input file extensions
-SUPPORTED_EXTENSIONS = {".pdf", ".html", ".htm"}
+SUPPORTED_EXTENSIONS = {".pdf", ".html", ".htm", ".csv", ".xlsx"}
 
 
 def getOutputPath(inputPath: Path, outputDir: Path) -> Path:
@@ -231,6 +231,12 @@ def convertFile(inputPath: Path, outputPath: Path, fast: bool = True,
             return convertPdfFast(inputPath, outputPath)
         else:
             return convertPdfFull(inputPath, outputPath, extractImages)
+    elif ext == ".csv":
+        from convert_tabular import convertCsvToMarkdown
+        return convertCsvToMarkdown(inputPath, outputPath)
+    elif ext == ".xlsx":
+        from convert_tabular import convertXlsxToMarkdown
+        return convertXlsxToMarkdown(inputPath, outputPath)
     else:
         print(f"  Skipped:  unsupported file type {ext}")
         return ""

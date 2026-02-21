@@ -1,0 +1,25 @@
+# Copyright (c) 2026 Mustafa Uzumeri. All rights reserved.
+#
+# docker-compose.yml — Knowledge Slot Curation Tool
+#
+# Run:  docker compose up --build
+# Open: http://localhost:8400
+
+services:
+  curation:
+    build: .
+    ports:
+      - "8400:8400"
+    volumes:
+      # Data directories — bind-mounted so files are visible on the host
+      - ./inputs:/app/inputs
+      - ./outputs:/app/outputs
+      - ./provenance:/app/provenance
+      - ./schemas:/app/schemas
+      - ./analyses:/app/analyses
+    environment:
+      - HOST=0.0.0.0
+      # Pass your OpenRouter key for LLM features (schema analysis,
+      # metadata extraction). Set in a .env file or export before running.
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+    restart: unless-stopped
