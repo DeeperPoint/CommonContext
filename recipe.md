@@ -380,7 +380,7 @@ One contract yields more schema coverage than a dozen regulatory documents.
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **cosolvent-beta**            | The Knowledge Slot (§16.2) will be implemented here. This project curates the *content* that populates it.                                                                                                               |
 | **CosolventAI**               | The original roadmap that first described the Slots Architecture (§21). Concepts from its Knowledge Slot design inform this work.                                                                                        |
-| **DPWebsitePublishingSystem** | The whitepaper (`tm-reference_CL4_V4.md`) provides the theoretical foundation — §5.13 (Curating Authoritative Information), §6.6 (AI-Curated Authoritative Information), §4.13 (Authoritative Information Availability). |
+| **DPWebsitePublishingSystem** | The whitepaper (`MarketTheoryWP.md`) provides the theoretical foundation — §5.13 (Curating Authoritative Information), §6.6 (AI-Curated Authoritative Information), §4.13 (Authoritative Information Availability). |
 | **GPSimAI**                   | A potential vertical consumer of Knowledge Slot content — grain and pulse trading.                                                                                                                                       |
 
 ---

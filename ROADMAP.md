@@ -7,7 +7,7 @@
 > **Relationship to other projects:**
 > - **cosolvent-beta** — The Knowledge Slot (§16.2 of its ROADMAP.md) will be implemented here. This project produces the *content* that populates it.
 > - **CosolventAI** — The original roadmap (§21, "Slots Architecture") introduced the Knowledge Slot concept and its detailed design. The earlier codebase used the term "curated industry context" (`industry_context_service`) for a related but less structured concept; "Knowledge Slot" replaced this to emphasise that sponsor-curated reference material is architecturally distinct from participant-supplied documents.
-> - **DPWebsitePublishingSystem** — The whitepaper (`tm-reference_CL4_V4.md`) provides the theoretical foundation in §4.13 (Authoritative Information Availability), §5.13 (Curating and Distributing Authoritative Information), and §6.6 (AI-Curated Authoritative Information).
+> - **DPWebsitePublishingSystem** — The whitepaper (`MarketTheoryWP.md`) provides the theoretical foundation in §4.13 (Authoritative Information Availability), §5.13 (Curating and Distributing Authoritative Information), and §6.6 (AI-Curated Authoritative Information).
 >
 > **Date:** 2026-02-20
 > **Author:** Mustafa Uzumeri
