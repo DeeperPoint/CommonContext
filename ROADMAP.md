@@ -5,7 +5,7 @@
 > **Purpose:** Curate, structure, and prepare domain knowledge content for ingestion into the Knowledge Slot of a Cosolvent marketplace deployment.
 >
 > **Relationship to other projects:**
-> - **cosolvent-beta** — The Knowledge Slot (§16.2 of its ROADMAP.md) will be implemented here. This project produces the *content* that populates it.
+> - **Cosolvent** — The Knowledge Slot (§16.2 of its ROADMAP.md) will be implemented here. This project produces the *content* that populates it.
 > - **CosolventAI** — The original roadmap (§21, "Slots Architecture") introduced the Knowledge Slot concept and its detailed design. The earlier codebase used the term "curated industry context" (`industry_context_service`) for a related but less structured concept; "Knowledge Slot" replaced this to emphasise that sponsor-curated reference material is architecturally distinct from participant-supplied documents.
 > - **DPWebsitePublishingSystem** — The whitepaper (`MarketTheoryWP.md`) provides the theoretical foundation in §4.13 (Authoritative Information Availability), §5.13 (Curating and Distributing Authoritative Information), and §6.6 (AI-Curated Authoritative Information).
 >
@@ -34,14 +34,14 @@ The concept has evolved through several iterations:
 | -------------------------- | ------------------------------------ | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | **Early CosolventAI**      | "Industry Context"                   | `industry_context_service` in CosolventAI codebase | General RAG over ingested documents — no separation between participant docs and reference docs                      |
 | **CosolventAI Roadmap**    | "Knowledge Slot"                     | §21 (Slots Architecture)                           | Architecturally distinct store for sponsor-curated, domain-authoritative reference material                          |
-| **cosolvent-beta Roadmap** | "Knowledge Slot (Reference Library)" | §16.2                                              | Implementation specification: `reference_library` table, metadata-filtered vector search, document curation workflow |
+| **Cosolvent Roadmap** | "Knowledge Slot (Reference Library)" | §16.2                                              | Implementation specification: `reference_library` table, metadata-filtered vector search, document curation workflow |
 | **This project**           | "Knowledge Slot Curation"            | AIKnowledgeSlotCuration repo                       | The process and tooling for preparing content to populate the Knowledge Slot                                         |
 
 The key architectural distinction: **participant documents** (Context Slot) follow the three-layer privacy model and are self-service. **Reference documents** (Knowledge Slot) are sponsor-curated, progressively built, and authoritative. The two never mix in retrieval.
 
 ---
 
-## 2. Design Principles (from CosolventAI §21 and cosolvent-beta §16.2)
+## 2. Design Principles (from CosolventAI §21 and Cosolvent §16.2)
 
 ### 2.1 — Separation from Participant Documents
 
@@ -186,7 +186,7 @@ This project curates the **content** side of the Knowledge Slot — the referenc
 
 ### Phase 3 — Ingestion Preparation
 
-**Goal:** Prepare content in the format required by the cosolvent-beta `reference_library` table.
+**Goal:** Prepare content in the format required by the Cosolvent `reference_library` table.
 
 - [ ] Define chunking strategy that preserves clause-level coherence
 - [ ] Tag each document chunk with vertical-specific metadata
@@ -198,9 +198,9 @@ This project curates the **content** side of the Knowledge Slot — the referenc
 
 ### Phase 4 — Integration Testing
 
-**Goal:** Validate that curated content works correctly when loaded into a cosolvent-beta instance.
+**Goal:** Validate that curated content works correctly when loaded into a Cosolvent instance.
 
-- [ ] Load curated content into a cosolvent-beta test instance
+- [ ] Load curated content into a Cosolvent test instance
 - [ ] Verify metadata-filtered vector search returns relevant results
 - [ ] Test domain Q&A with grain trading questions
 - [ ] Verify user-context scoping (e.g., a buyer in Japan gets Japan-relevant regulations)
@@ -222,11 +222,11 @@ This project curates the **content** side of the Knowledge Slot — the referenc
 
 | Dependency                         | Project        | Status                        | Impact                                           |
 | ---------------------------------- | -------------- | ----------------------------- | ------------------------------------------------ |
-| `reference_library` table schema   | cosolvent-beta | 🔲 Not yet implemented (§16.2) | Phase 3 ingestion format depends on this         |
-| `reference_metadata_schema` config | cosolvent-beta | 🔲 Not yet implemented (§16.2) | Phase 3 metadata tagging depends on this         |
-| Domain Q&A chat mode               | cosolvent-beta | 🔲 Not yet implemented (§16.2) | Phase 4 testing depends on this                  |
-| Embedding model choice             | cosolvent-beta | ✅ OpenAI via `llm_client.py`  | Phase 3 embeddings must match this model         |
-| Composable retrieval interface     | cosolvent-beta | 🔲 Not yet implemented         | Phase 4 cross-collection testing depends on this |
+| `reference_library` table schema   | Cosolvent | 🔲 Not yet implemented (§16.2) | Phase 3 ingestion format depends on this         |
+| `reference_metadata_schema` config | Cosolvent | 🔲 Not yet implemented (§16.2) | Phase 3 metadata tagging depends on this         |
+| Domain Q&A chat mode               | Cosolvent | 🔲 Not yet implemented (§16.2) | Phase 4 testing depends on this                  |
+| Embedding model choice             | Cosolvent | ✅ OpenAI via `llm_client.py`  | Phase 3 embeddings must match this model         |
+| Composable retrieval interface     | Cosolvent | 🔲 Not yet implemented         | Phase 4 cross-collection testing depends on this |
 
 ---
 

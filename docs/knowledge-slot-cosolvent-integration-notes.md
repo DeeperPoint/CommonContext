@@ -1,9 +1,9 @@
 <!-- Copyright © 2026 Mustafa Uzumeri. All rights reserved. -->
 
-# Knowledge Slot ↔ Cosolvent-Beta Integration Notes
+# Knowledge Slot ↔ Cosolvent Integration Notes
 
 > **Date:** 2026-02-20
-> **Context:** Discussion of how the draft `grain_trade_schema.yaml` fits into the cosolvent-beta roadmap, how the schema interacts with chunking and RAG, whether the architecture generalises across verticals, and the overall project organisational model.
+> **Context:** Discussion of how the draft `grain_trade_schema.yaml` fits into the Cosolvent roadmap, how the schema interacts with chunking and RAG, whether the architecture generalises across verticals, and the overall project organisational model.
 > **Status:** Waiting for Munim's review of the cosolvent roadmap(s) before proceeding
 > **Participants:** Mustafa Uzumeri, Antigravity Agent
 
@@ -83,12 +83,12 @@ grain-trading-vertical/                  ← Vertical (B)
 
 ## 2. Where the Knowledge Slot Fits in the Roadmap
 
-The grain trade schema is the first concrete deliverable for **cosolvent-beta ROADMAP §16.2** ("Knowledge Slot — Reference Library"). It maps to **Track B, item B1.4** in the prioritised implementation phases.
+The grain trade schema is the first concrete deliverable for **Cosolvent ROADMAP §16.2** ("Knowledge Slot — Reference Library"). It maps to **Track B, item B1.4** in the prioritised implementation phases.
 
 ### Current Position
 
 ```
-AIKnowledgeSlotCuration                 cosolvent-beta
+AIKnowledgeSlotCuration                 Cosolvent
 ═══════════════════════                 ══════════════
 Phase 1 — Foundation ✅                  Phase 0 — Hygiene
   • PDF/URL conversion tools              Phase 1 — Three-Layer + Deals
@@ -104,7 +104,7 @@ Phase 3 — Ingestion Prep 🔲 ──────── BLOCKED by B1.4 (no tab
 Phase 4 — Integration Test 🔲 ────── BLOCKED by B1.4 + B1.5 + Domain Q&A
 ```
 
-**Phase 2 work (more contracts, enriching the schema) can proceed independently.** Phase 3 is blocked until cosolvent-beta implements the `reference_library` table.
+**Phase 2 work (more contracts, enriching the schema) can proceed independently.** Phase 3 is blocked until Cosolvent implements the `reference_library` table.
 
 ---
 
@@ -112,9 +112,9 @@ Phase 4 — Integration Test 🔲 ────── BLOCKED by B1.4 + B1.5 + Do
 
 ### What Maps Cleanly
 
-The schema's §19 (`participant_roles`) maps directly to cosolvent-beta's `ParticipantType` model:
+The schema's §19 (`participant_roles`) maps directly to Cosolvent's `ParticipantType` model:
 
-| Schema Role                               | cosolvent-beta `role` | Example `slug`  |
+| Schema Role                               | Cosolvent `role` | Example `slug`  |
 | ----------------------------------------- | --------------------- | --------------- |
 | `supply` (Seller)                         | `"supply"`            | `"seller"`      |
 | `demand` (Buyer)                          | `"demand"`            | `"buyer"`       |
@@ -124,7 +124,7 @@ The schema's §19 (`participant_roles`) maps directly to cosolvent-beta's `Parti
 
 The schema identifies **9 facilitator subtypes**: broker, shipping agent, insurance broker, superintendent, analyst, fumigator, trade finance, customs broker, legal counsel. Each has different capabilities, GAFTA registries, and relevant clauses.
 
-cosolvent-beta's `ParticipantType` is a flat structure — one entry per type with a `slug`, `name`, `role`, and `permissions`. **Conflict C3** limits participant types to 3 for MVP.
+Cosolvent's `ParticipantType` is a flat structure — one entry per type with a `slug`, `name`, `role`, and `permissions`. **Conflict C3** limits participant types to 3 for MVP.
 
 **Three options discussed:**
 
@@ -258,7 +258,7 @@ User query: "What fumigation requirements apply to wheat shipments to Japan?"
 
 ### Role 2: Schema as Chunking Guide (Ingestion-Time)
 
-Current best practice has moved from fixed-size chunking to **structure-aware chunking**. cosolvent-beta's current 1000-char/200-overlap approach is fine for freeform participant documents but is **harmful for contracts and standards** because:
+Current best practice has moved from fixed-size chunking to **structure-aware chunking**. Cosolvent's current 1000-char/200-overlap approach is fine for freeform participant documents but is **harmful for contracts and standards** because:
 
 1. A fixed window can split a clause in half, losing the heading and context
 2. Citation becomes impossible when chunks don't know what clause they came from
@@ -387,7 +387,7 @@ Six conditions for the A / B(B1, B2, B3) model to work:
 
 ### Gotcha 1: Fork or Configure?
 
-cosolvent-beta is designed for "Configure" (YAML config, dynamic schemas, prompt management). If any vertical needs a feature the framework doesn't support (e.g. clause-aware chunking when only fixed-size exists), the vertical faces: wait for upstream, fork, or contribute upstream.
+Cosolvent is designed for "Configure" (YAML config, dynamic schemas, prompt management). If any vertical needs a feature the framework doesn't support (e.g. clause-aware chunking when only fixed-size exists), the vertical faces: wait for upstream, fork, or contribute upstream.
 
 **Mitigation:** Cosolvent must define **stable extension points** (marketplace config, prompt templates, Knowledge Slot interface, ClientSynth API contract, chunking strategy plugins) and version them as public API.
 
@@ -399,7 +399,7 @@ When Cosolvent releases a new version, existing verticals decide whether to upgr
 
 ### Gotcha 3: Where Does `marketplace.yaml` Live?
 
-Currently inside the cosolvent-beta repo. In the organisational model it's vertical-specific content (B), not framework code (A). The vertical project should own its `marketplace.yaml` and mount it into a Cosolvent container.
+Currently inside the Cosolvent repo. In the organisational model it's vertical-specific content (B), not framework code (A). The vertical project should own its `marketplace.yaml` and mount it into a Cosolvent container.
 
 **Mitigation:** Already supported via `MARKETPLACE_CONFIG_PATH` env var. But Knowledge Slot content has **no equivalent mount point** — there's no `REFERENCE_LIBRARY_SEED_PATH` or CLI for seed data loading. This needs to be part of B1.4 implementation.
 
@@ -443,7 +443,7 @@ How currently converted documents would map to `reference_documents` rows:
 
 1. **Does the A / B(B1, B2, B3) model make sense?** Each vertical is sponsor-owned, starts from a Cosolvent version, and includes its own Knowledge Slot, ClientSynth, and Digital Twin.
 
-2. **Roadmap phasing** — Should Knowledge Slot (B1.4) be pulled earlier in the cosolvent-beta roadmap, given that content curation is already underway? It's currently in Track B (after Phase 2).
+2. **Roadmap phasing** — Should Knowledge Slot (B1.4) be pulled earlier in the Cosolvent roadmap, given that content curation is already underway? It's currently in Track B (after Phase 2).
 
 ### Participant Roles
 

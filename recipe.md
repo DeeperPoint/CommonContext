@@ -221,7 +221,7 @@ After conversion, analyse the Markdown to extract a domain schema — the struct
 **Why YAML:**
 - Human-readable — sponsors can review and edit
 - Machine-parseable — can be ingested by the Knowledge Slot system
-- Matches cosolvent-beta's configuration pattern (marketplace.yaml)
+- Matches Cosolvent's configuration pattern (marketplace.yaml)
 - Supports comments for provenance and rationale
 
 **Key insight:** The schema is not just a data dictionary. It includes:
@@ -240,7 +240,7 @@ Map the domain's participant roles to Cosolvent's three-category model:
 | **Demand**         | Buyer / Importer                                                                                                           | `participant_roles.demand`               |
 | **Facilitator**    | Broker, shipping agent, insurance broker, superintendent, analyst, fumigator, trade finance, customs broker, legal counsel | `participant_roles.facilitator.subtypes` |
 
-**Key insight (from GAFTA 27):** A single grain trade contract implies **9 distinct facilitator subtypes**. This directly informs Conflict C3 in the cosolvent-beta roadmap (participant type limit). The Knowledge Slot schema should enumerate these so the marketplace knows which facilitator roles exist in the domain.
+**Key insight (from GAFTA 27):** A single grain trade contract implies **9 distinct facilitator subtypes**. This directly informs Conflict C3 in the Cosolvent roadmap (participant type limit). The Knowledge Slot schema should enumerate these so the marketplace knows which facilitator roles exist in the domain.
 
 ### Step 5 — Metadata Tagging Schema
 
@@ -257,7 +257,7 @@ For grain trading, the tag vocabulary includes:
 | `trade_corridor`      | Origin–destination pair | Canada→Japan, US→EU                   |
 | `issuing_body`        | Who published it        | GAFTA, CGC, USDA, FGIS                |
 
-This vocabulary is used for metadata-filtered vector search — the retrieval pattern described in §16.2 of the cosolvent-beta roadmap.
+This vocabulary is used for metadata-filtered vector search — the retrieval pattern described in §16.2 of the Cosolvent roadmap.
 
 ### Step 6 — Quality Review and Iteration
 
@@ -316,7 +316,7 @@ One contract yields more schema coverage than a dozen regulatory documents.
 
 ### 3.3 — Facilitator Enumeration
 
-**Insight:** The GAFTA contract explicitly or implicitly references 9 facilitator subtypes. This is far more granular than the simple "facilitator" category in cosolvent-beta's current data model. The Knowledge Slot schema should capture this granularity so the AI can:
+**Insight:** The GAFTA contract explicitly or implicitly references 9 facilitator subtypes. This is far more granular than the simple "facilitator" category in Cosolvent's current data model. The Knowledge Slot schema should capture this granularity so the AI can:
 - Recommend the right type of facilitator for a deal
 - Match facilitators based on role-specific capability dimensions
 - Generate informed Handoff Artifacts that list the facilitator roles needed
@@ -378,7 +378,7 @@ One contract yields more schema coverage than a dozen regulatory documents.
 
 | Project                       | Relationship                                                                                                                                                                                                             |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **cosolvent-beta**            | The Knowledge Slot (§16.2) will be implemented here. This project curates the *content* that populates it.                                                                                                               |
+| **Cosolvent**            | The Knowledge Slot (§16.2) will be implemented here. This project curates the *content* that populates it.                                                                                                               |
 | **CosolventAI**               | The original roadmap that first described the Slots Architecture (§21). Concepts from its Knowledge Slot design inform this work.                                                                                        |
 | **DPWebsitePublishingSystem** | The whitepaper (`MarketTheoryWP.md`) provides the theoretical foundation — §5.13 (Curating Authoritative Information), §6.6 (AI-Curated Authoritative Information), §4.13 (Authoritative Information Availability). |
 | **GPSimAI**                   | A potential vertical consumer of Knowledge Slot content — grain and pulse trading.                                                                                                                                       |
