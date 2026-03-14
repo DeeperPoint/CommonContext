@@ -45,7 +45,7 @@ AIKnowledgeSlotCuration/
 
 ### Prerequisites
 
-- Python 3.12 (required by `marker-pdf`)
+- Python 3.10+ (marker-pdf requires `>=3.10, <4.0`)
 - pip (Python package installer)
 
 ### Setup
