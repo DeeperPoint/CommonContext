@@ -1,11 +1,17 @@
 <!-- Copyright © 2026 Mustafa Uzumeri. All rights reserved. -->
 
-# Knowledge Slot ↔ Cosolvent Integration Notes
+# DECISION-000: Architecture and Integration (Knowledge Slot ↔ Cosolvent)
 
-> **Date:** 2026-02-20
-> **Context:** Discussion of how the draft `grain_trade_schema.yaml` fits into the Cosolvent roadmap, how the schema interacts with chunking and RAG, whether the architecture generalises across verticals, and the overall project organisational model.
-> **Status:** Waiting for Munim's review of the cosolvent roadmap(s) before proceeding
+> **Date:** 2026-02-20 (original); updated 2026-03-14
+> **Context:** Foundational architectural specification for how the Knowledge Slot integrates with Cosolvent: organisational model, table design, chunking strategy, cross-vertical generalisation, and extension points.
+> **Status:** Open — contains resolved, superseded, and still-pending decisions (see §9)
 > **Participants:** Mustafa Uzumeri, Antigravity Agent
+>
+> **Successor documents:**
+> - `DECISION-001-pull-signal-transport.md` — How gap signals flow between Cosolvent and KnowledgeSlot (supersedes parts of §9 Q6)
+> - `DECISION-002-staleness-detection.md` — Periodic scanning for stale reference material (addresses ROADMAP Open Question 6)
+> - `DECISION-003-facilitator-subtypes.md` — Facilitator subtype strategy (extracted from §3 / §9 Q3)
+> - `DECISION-004-reference-table-design.md` — Two-table design and gap signals schema (extracted from §4 / §9 Q4)
 
 ---
 
@@ -439,29 +445,39 @@ How currently converted documents would map to `reference_documents` rows:
 
 ## 9. Questions for Munim's Review
 
+> **Update 2026-03-14:** Several questions below have been superseded by dedicated DECISION documents or partially addressed by ROADMAP updates. Status annotations added.
+
 ### Roadmap & Organisation
 
 1. **Does the A / B(B1, B2, B3) model make sense?** Each vertical is sponsor-owned, starts from a Cosolvent version, and includes its own Knowledge Slot, ClientSynth, and Digital Twin.
+   > ⏳ **Still pending.** No formal decision recorded.
 
 2. **Roadmap phasing** — Should Knowledge Slot (B1.4) be pulled earlier in the Cosolvent roadmap, given that content curation is already underway? It's currently in Track B (after Phase 2).
+   > ⏳ **Still pending.** No formal decision recorded.
 
 ### Participant Roles
 
 3. **Facilitator subtype permissions** — Do different facilitator roles (superintendent vs. broker vs. customs) need different permission sets? This determines whether Conflict C3 needs early resolution.
+   > 📄 **Extracted → `DECISION-003-facilitator-subtypes.md`**
 
 ### Knowledge Slot Design
 
 4. **Two-table design** — Does the `reference_documents` + `reference_chunks` split make sense? Does the `vertical_metadata` JSONB approach provide enough structure?
+   > 📄 **Extracted → `DECISION-004-reference-table-design.md`** (expanded to include `knowledge_gap_signals` schema from the Pull System)
 
 5. **Chunking strategy** — Should the framework support pluggable chunking strategies per document type? The GAFTA contract has numbered clauses that should be chunk boundaries.
+   > ⏳ **Still pending.** The analysis in §5 above remains valid. No formal decision recorded.
 
 6. **Seed data loading** — The vertical project needs a way to load Knowledge Slot content (B1) into a Cosolvent instance. Should this be a CLI command, a startup hook, or an admin API endpoint?
+   > 🔀 **Partially superseded by `DECISION-001-pull-signal-transport.md`**, which addresses the broader question of how KnowledgeSlot and Cosolvent exchange data at runtime. The seed loading mechanism is a subset of that transport decision.
 
 ### Vocabulary & Integration
 
 7. **Shared taxonomy convention** — How should `marketplace.yaml` profile field values and `reference_metadata_schema` values stay in sync? Shared YAML files, or documentation convention?
+   > ⏳ **Still pending.** No formal decision recorded. See Gotcha 6 (§7) for context.
 
 8. **`reference_metadata_schema` placement** — Should this be a new top-level section in `marketplace.yaml`, or a separate config file?
+   > ⏳ **Still pending.** Minor — can be resolved when the table design (DECISION-004) is decided.
 
 ---
 
