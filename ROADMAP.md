@@ -94,6 +94,10 @@ The chatbot supports a "domain knowledge" mode where it answers from the referen
 
 The Knowledge Slot's chat behaviour is configured via `system_prompts`: the vertical deployment defines the persona (e.g., "You are a trade advisor specialising in Asia-Pacific grain imports"), the citation style, and the scope boundaries ("only answer from reference material; say 'I don't have this information' otherwise").
 
+### 2.8 — Demand-Driven Curation (Pull Signals)
+
+The reference library is progressively built not just through proactive ingestion, but actively guided by user queries that fall outside the current envelope. When a user asks a question the Knowledge Slot cannot answer, the system gracefully falls back (e.g., to external synthesis) and simultaneously fires a "Curatorial Pull Signal" to the sponsor dashboard. This highlights specific, high-value knowledge gaps obstructing potential transactions, directing the sponsor's curation efforts exactly where they are needed most.
+
 ---
 
 ## 3. Cross-Slot Architectural Guardrails
@@ -126,6 +130,7 @@ This project curates the **content** side of the Knowledge Slot — the referenc
 | **Participant role map**           | YAML (in schema) | GAFTA roles mapped to Cosolvent supply/demand/facilitator categories  | In schema §19 ✅                     |
 | **Referenced standards inventory** | YAML (in schema) | Standards incorporated by reference — candidates for future ingestion | In schema §20 ✅                     |
 | **Process recipe**                 | Markdown         | Documented workflow for curating additional content                   | `recipe.md` ✅                       |
+| **Gap detection prompt**           | Markdown         | Editable LLM prompt instructing the model to declare missing context and format a pull signal | `prompts/gap_detection.md` 🔲 |
 
 ### 4.2 — Current Content Inventory
 
@@ -195,6 +200,7 @@ This project curates the **content** side of the Knowledge Slot — the referenc
 - [ ] Create seed data scripts for the `reference_library` table
 - [ ] Write domain Q&A system prompts for grain trading vertical
 - [ ] Define the `reference_metadata_schema` configuration for grain trading
+- [ ] Define database schema for `knowledge_gap_signals`
 
 ### Phase 4 — Integration Testing
 
@@ -206,6 +212,7 @@ This project curates the **content** side of the Knowledge Slot — the referenc
 - [ ] Verify user-context scoping (e.g., a buyer in Japan gets Japan-relevant regulations)
 - [ ] Test cross-collection retrieval (reference library + participant data)
 - [ ] Validate facilitator role recommendations based on schema
+- [ ] Test the "Curatorial Pull" loop: Intentionally query missing information, verify the fallback response, verify the generation of a curation signal, ingest the missing document, and verify the updated response.
 
 ### Phase 5 — Additional Verticals (Future)
 
@@ -250,5 +257,5 @@ The Knowledge Slot operationalises several whitepaper concepts:
 2. **Cross-contract conflicts:** What happens when two GAFTA contracts define the same entity differently (e.g., different tolerance rules for FOB vs. CIF terms)?
 3. **Chunking strategy:** What chunking approach preserves clause-level coherence while staying within embedding model context limits?
 4. **Multi-vertical schema inheritance:** Should schema formats support inheritance (a base trading schema extended by corridor-specific schemas)?
-5. **Sponsor curation UX:** What does the admin workflow look like for a non-technical sponsor uploading and tagging documents?
+5. **Sponsor curation UX:** What does the admin workflow look like for a non-technical sponsor uploading and tagging documents, and how do they manage the Curatorial Pull Signal queue to address high-value knowledge gaps?
 6. **Update monitoring:** How should the system handle updates to reference documents (e.g., GAFTA publishes a 2027 edition of Contract No. 27)?
