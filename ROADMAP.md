@@ -9,7 +9,7 @@
 > - **CosolventAI** — The original roadmap (§21, "Slots Architecture") introduced the Knowledge Slot concept and its detailed design. The earlier codebase used the term "curated industry context" (`industry_context_service`) for a related but less structured concept; "Knowledge Slot" replaced this to emphasise that sponsor-curated reference material is architecturally distinct from participant-supplied documents.
 > - **DPWebsitePublishingSystem** — The whitepaper (`MarketTheoryWP.md`) provides the theoretical foundation in §4.13 (Authoritative Information Availability), §5.13 (Curating and Distributing Authoritative Information), and §6.6 (AI-Curated Authoritative Information).
 >
-> **Date:** 2026-02-20
+> **Date:** 2026-02-20 (original); last updated 2026-03-14
 > **Author:** Mustafa Uzumeri
 
 ---
@@ -97,6 +97,14 @@ The Knowledge Slot's chat behaviour is configured via `system_prompts`: the vert
 ### 2.8 — Demand-Driven Curation (Pull Signals)
 
 The reference library is progressively built not just through proactive ingestion, but actively guided by user queries that fall outside the current envelope. When a user asks a question the Knowledge Slot cannot answer, the system gracefully falls back (e.g., to external synthesis) and simultaneously fires a "Curatorial Pull Signal" to the sponsor dashboard. This highlights specific, high-value knowledge gaps obstructing potential transactions, directing the sponsor's curation efforts exactly where they are needed most.
+
+> **Design details:** See `docs/DECISION-001-pull-signal-transport.md` for the open decision on how signals flow between Cosolvent and KnowledgeSlot.
+
+### 2.9 — Staleness Detection
+
+Reference documents are periodically checked for indicators of change or supersession. The system alerts the curator rather than attempting automatic updates, preserving the sponsor's editorial authority over the reference library. Three detection strategies are employed: source URL monitoring (for documents fetched from the web), LLM-assisted web search (for all documents), and age-based review thresholds.
+
+> **Design details:** See `docs/DECISION-002-staleness-detection.md`.
 
 ---
 
@@ -258,4 +266,6 @@ The Knowledge Slot operationalises several whitepaper concepts:
 3. **Chunking strategy:** What chunking approach preserves clause-level coherence while staying within embedding model context limits?
 4. **Multi-vertical schema inheritance:** Should schema formats support inheritance (a base trading schema extended by corridor-specific schemas)?
 5. **Sponsor curation UX:** What does the admin workflow look like for a non-technical sponsor uploading and tagging documents, and how do they manage the Curatorial Pull Signal queue to address high-value knowledge gaps?
-6. **Update monitoring:** How should the system handle updates to reference documents (e.g., GAFTA publishes a 2027 edition of Contract No. 27)?
+6. **Update monitoring:** ~~How should the system handle updates to reference documents?~~ → Addressed by `docs/DECISION-002-staleness-detection.md` (periodic automated scanning with curator-facing alerts).
+
+> **Note:** Additional open design decisions are tracked in `docs/DECISION-*.md`. See `docs/DECISION-000-architecture-and-integration.md` for the foundational architecture specification and a status summary of all pending questions.
