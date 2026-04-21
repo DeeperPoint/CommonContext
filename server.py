@@ -36,6 +36,7 @@ from pydantic import BaseModel, Field
 from provenance import (
     recordProvenance, getProvenance, listProvenance, injectFrontmatter,
 )
+from chunk_and_embed import process_document
 
 # ── Configuration ──────────────────────────────────────────────────────────
 
@@ -135,6 +136,12 @@ class MetadataExtractRequest(BaseModel):
     """Request to extract document-level citation metadata via LLM."""
     documentPath: str
     model: str | None = None
+
+
+class ChunkAndEmbedRequest(BaseModel):
+    """Request to process document into chunks, tag, and embed into JSONL."""
+    documentPath: str
+    schemaPath: str
 
 
 # ── FastAPI App ────────────────────────────────────────────────────────────
@@ -627,6 +634,33 @@ async def extractMetadataEndpoint(req: MetadataExtractRequest) -> dict[str, Any]
             content={"status": "error", "errorMessage": str(e)},
         )
 
+@app.post("/api/chunk-and-embed")
+async def chunkAndEmbedEndpoint(req: ChunkAndEmbedRequest) -> dict[str, Any]:
+    """Process a markdown document into tagged, embedded chunks.
+
+    Exports a JSONL file with semantic context ready for vector db insertion.
+    """
+    try:
+        from chunk_and_embed import process_document
+        outfile_path = await process_document(
+            markdown_path=req.documentPath,
+            schema_path=req.schemaPath
+        )
+        return {"status": "success", "processedFile": outfile_path}
+
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e)) from e
+    except RuntimeError as e:
+        return JSONResponse(
+            status_code=503,
+            content={"status": "error", "errorMessage": str(e)},
+        )
+    except Exception as e:
+        logger.exception("Chunk and Embed failed for %s", req.documentPath)
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "errorMessage": str(e)},
+        )
 
 @app.get("/api/analysis/{filename}")
 async def getAnalysis(filename: str) -> dict[str, Any]:
