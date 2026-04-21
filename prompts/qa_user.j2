@@ -1,0 +1,17 @@
+{# Copyright (c) 2026 Mustafa Uzumeri. All rights reserved. #}
+User Query:
+{{ user_query }}
+
+Reference Information (from Knowledge Slot):
+{% for chunk in retrieved_chunks %}
+---
+Source: {{ chunk.metadata.doc_type }} - {{ chunk.metadata.standard | default('Unknown Standard') }}
+Context: {{ chunk.contextual_content }}
+
+Content:
+{{ chunk.content }}
+{% else %}
+[No relevant reference information found in the library.]
+{% endfor %}
+
+Please answer the user's query based ONLY on the Reference Information provided above. Remember to apply the correct citation style.
