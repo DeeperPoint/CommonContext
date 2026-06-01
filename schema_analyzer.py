@@ -43,8 +43,9 @@ PROMPT_FILE = PROMPT_DIR / "schema_analysis.md"
 # OpenRouter endpoint
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-# Default model — can be overridden via OPENROUTER_MODEL env var
-DEFAULT_MODEL = "google/gemini-2.0-flash-001"
+# Default model — can be overridden via OPENROUTER_MODEL env var.
+# (The older google/gemini-2.0-flash-001 slug now 404s on OpenRouter.)
+DEFAULT_MODEL = "google/gemini-2.5-flash"
 
 # Env files to search for the API key (in priority order)
 ENV_SEARCH_PATHS = [
