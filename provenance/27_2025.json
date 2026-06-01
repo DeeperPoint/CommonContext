@@ -1,0 +1,95 @@
+{
+  "source_url": "https://www.gafta.com",
+  "source_type": null,
+  "original_filename": null,
+  "content_type": null,
+  "http_headers": {},
+  "document_title": "CONTRACT FOR CANADIAN AND UNITED STATES OF AMERICA GRAIN IN BULK - CARGOES TALE QUALE – CIF/CIFFO/C&F/C&FFO TERMS (ContractNo.27)",
+  "fetched_at": "2026-04-11T09:30:07.509216+00:00",
+  "converted_at": "2026-04-11T09:30:07.509216+00:00",
+  "output_filename": "27_2025.md",
+  "file_size_bytes": null,
+  "conversion_method": null,
+  "notes": "Type: contract | Issuer: Grain and Feed Trade Association (GAFTA) | Summary: Standard contract terms for the international trade of Canadian and US grain in bulk cargoes, covering CIF, CIFFO, C&F, and C&FFO terms.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "title": "CONTRACT FOR CANADIAN AND UNITED STATES OF AMERICA GRAIN IN BULK - CARGOES TALE QUALE – CIF/CIFFO/C&F/C&FFO TERMS",
+      "subtitle": null,
+      "document_type": "contract",
+      "identifier": "ContractNo.27",
+      "version": null,
+      "date_published": null,
+      "date_effective": null,
+      "date_supersedes": null
+    },
+    "issuing_organization": {
+      "name": "Grain and Feed Trade Association (GAFTA)",
+      "type": "industry_association",
+      "country": "United Kingdom",
+      "website": "https://www.gafta.com"
+    },
+    "authors": [
+      {
+        "name": null,
+        "role": null
+      }
+    ],
+    "subject_matter": {
+      "description": "Standard contract terms for the international trade of Canadian and US grain in bulk cargoes, covering CIF, CIFFO, C&F, and C&FFO terms.",
+      "domain": "Agricultural Commodity Trade",
+      "topics": [
+        "CIF grain contracts",
+        "C&F grain contracts",
+        "CIFFO grain contracts",
+        "C&FFO grain contracts",
+        "Grain trade"
+      ],
+      "keywords": [
+        "grain",
+        "trade",
+        "CIF",
+        "C&F",
+        "CIFFO",
+        "C&FFO",
+        "contract"
+      ]
+    },
+    "geographic_scope": {
+      "jurisdictions": [
+        "Canada",
+        "United States"
+      ],
+      "trade_corridors": [
+        "North America to international"
+      ]
+    },
+    "referenced_standards": [
+      {
+        "identifier": "GAFTA Weighing Rules No. 123",
+        "title": "Weighing Rules"
+      },
+      {
+        "identifier": "GAFTA Sampling Rules No.124",
+        "title": "Sampling Rules"
+      },
+      {
+        "identifier": "GAFTA Fumigation Rules No. 132",
+        "title": "Fumigation Rules"
+      },
+      {
+        "identifier": "Gafta Insurance Terms No.72",
+        "title": "Insurance Terms"
+      },
+      {
+        "identifier": "GAFTA Arbitration Rules, No 125",
+        "title": "Arbitration Rules"
+      },
+      {
+        "identifier": "GAFTA Methods of Analysis No. 130",
+        "title": "Methods of Analysis"
+      }
+    ],
+    "language": "English",
+    "confidence_notes": "Extracted all information directly from the document. Year of publication could not be determined."
+  }
+}
