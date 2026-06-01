@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Mustafa Uzumeri. All rights reserved.
+#
+# Test/development dependencies (in addition to requirements.txt).
+# Install with:  pip install -r requirements-dev.txt
+
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+
+# Postgres / pgvector — used by the seed script and the integration test.
+psycopg[binary]>=3.1.0
+pgvector>=0.2.5
