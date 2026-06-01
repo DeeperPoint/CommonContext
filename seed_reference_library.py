@@ -387,6 +387,15 @@ def main(
     Records are upserted on chunk_id — re-running after regenerating chunks
     updates changed content in-place rather than duplicating rows.
     """
+    # The progress/summary output uses box-drawing characters. When stdout is a
+    # pipe (CI, subprocess, redirected logs) Windows defaults to cp1252, which
+    # cannot encode them and would crash AFTER a successful load. Force UTF-8.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
     # ── Resolve source files ───────────────────────────────────────────────
     if source.is_dir():
         files = sorted(source.glob("*.jsonl"))
@@ -403,7 +412,6 @@ def main(
     # ── Connect ────────────────────────────────────────────────────────────
     try:
         conn = psycopg.connect(db_url, autocommit=False)
-        register_vector(conn)
     except psycopg.OperationalError as exc:
         click.echo(f"Connection failed: {exc}", err=True)
         sys.exit(1)
@@ -420,6 +428,19 @@ def main(
             click.echo(f"DDL failed: {exc}", err=True)
             conn.close()
             sys.exit(1)
+
+    # register_vector() looks up the 'vector' type OID, which only exists once
+    # the extension is installed — so it must run AFTER the DDL on a fresh DB.
+    # When not creating the table, the extension is assumed to already exist.
+    try:
+        with conn.cursor() as cur:
+            cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+        conn.commit()
+        register_vector(conn)
+    except psycopg.Error as exc:
+        click.echo(f"pgvector setup failed: {exc}", err=True)
+        conn.close()
+        sys.exit(1)
 
     # ── Seed each file ─────────────────────────────────────────────────────
     grand = RunCounter()
