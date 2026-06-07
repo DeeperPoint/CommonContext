@@ -184,5 +184,63 @@ To integrate this model into `CommonContext` without breaking the existing pipel
 
 ---
 
+## 9. Manual Bootstrapping Guidelines (Minimizing Backtracking)
+
+If you wish to start drafting and organizing the domain wiki manually (e.g., inside Obsidian or a markdown editor) before the programmatic integration is complete, adhering to these rules will ensure zero backtracking and maximum compatibility with future programmatic updates:
+
+### 9.1 Folder and Slug Structure Invariant
+*   Keep the wiki nested under a `wiki/` directory at the root of `CommonContext/`.
+*   Maintain the split:
+    *   `wiki/pages/concepts/` (for concept synthesis, e.g., `weighing_rules.md`)
+    *   `wiki/pages/entities/` (for domain-specific entities/roles, e.g., `superintendent.md`)
+    *   `wiki/pages/sources/` (for document index pages, e.g., `source_27_2025.md`)
+*   **Filename Slug Rule:** All filenames must be `lower_snake_case` (e.g., `force_majeure.md`, NOT `Force Majeure.md` or `Force-Majeure.md`). This enables deterministic programmatic link-checks and schema mappings.
+
+### 9.2 Strict YAML Frontmatter Metadata
+Always prepend clean YAML frontmatter containing metadata aligned with the schemas folder.
+*   **For concepts and entities:**
+    ```yaml
+    ---
+    title: "Weighing Rules"
+    type: "concept" # or "entity"
+    topics: [weighing, quality]
+    last_updated: 2026-06-07
+    sources: [GAFTA_27_2025]
+    ---
+    ```
+*   **For source summary pages:**
+    ```yaml
+    ---
+    title: "GAFTA Contract No. 27 (2025 Edition)"
+    type: "source"
+    issuing_organization: "GAFTA"
+    document_type: "contract"
+    date_published: 2025
+    jurisdiction: ["Canada", "US"]
+    ---
+    ```
+
+### 9.3 Bidirectional Wiki-Links Format
+*   Use standard wikilink syntax pointing to page paths without leading or relative components: `[[concepts/weighing_rules]]` or `[[sources/source_27_2025]]`.
+*   To refer to specific clauses or anchors, append hash tags: `[[sources/source_27_2025#clause_18|GAFTA 27, Clause 18]]`.
+
+### 9.4 Structuring Headings for Heading-Based Chunking
+Because the pipeline chunks by heading hierarchy via [chunk_and_embed.py](file:///Users/mustafauzumeri/Documents/GitHub/CommonContext/chunk_and_embed.py):
+*   Use exactly **one H1 (`#`)** at the top of the file for the page title.
+*   Use **H2 (`##`)** for high-level concepts (e.g., `## GAFTA 27 Weighing Provisions`).
+*   Use **H3 (`###`)** for clause details.
+*   Keep text blocks under each heading under ~500 words to ensure optimal chunk embedding length.
+
+### 9.5 Git-Managed Concurrency
+*   Commit your manual drafts to Git regularly.
+*   When the programmatic ingester is later turned on, it will fetch updates in isolated git branches (e.g., `wiki-ingest-<doc-id>`), making it trivial to diff, merge, and resolve conflicts with manual entries.
+
+### 9.6 Index and Log Maintenance
+*   Append ingests to `wiki/log.md` manually: `## [YYYY-MM-DD] manual | Created force_majeure page`.
+*   Keep `wiki/index.md` updated with lists of pages grouped by type.
+
+---
+
 > [!NOTE]
 > Integrating the LLM Wiki pattern changes the Knowledge Slot curation from an "ingest-once-and-forget" RAG setup to a continuous, compounding domain-knowledge synthesis. While it adds a processing step, it substantially reduces LLM reasoning costs during live marketplace operations and guarantees higher citation accuracy.
+
