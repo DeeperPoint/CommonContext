@@ -21,8 +21,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Application code
-COPY server.py convert_pdf.py convert_url.py convert_tabular.py \
-    provenance.py metadata_extractor.py schema_analyzer.py ./
+COPY *.py ./
 
 # Static GUI and prompt templates
 COPY static/ static/
