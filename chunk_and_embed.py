@@ -35,6 +35,15 @@ from dotenv import load_dotenv
 from schema_analyzer import _discoverApiKey, _callOpenRouter
 from provenance import getProvenance
 
+# The reference metadata models live in schemas/, which is not a package on the
+# import path during a CLI run; add it so the tagging step can read the
+# authoritative topic vocabulary straight from the pydantic model.
+import sys as _sys
+_SCHEMAS_DIR = Path(__file__).resolve().parent / "schemas"
+if str(_SCHEMAS_DIR) not in _sys.path:
+    _sys.path.insert(0, str(_SCHEMAS_DIR))
+from reference_metadata_schema import get_allowed_topics
+
 logger = logging.getLogger("curation.chunker")
 logging.basicConfig(level=logging.INFO)
 
@@ -48,6 +57,86 @@ def _loadPromptTemplate() -> str:
     if not PROMPT_FILE.exists():
         raise FileNotFoundError(f"Prompt template missing: {PROMPT_FILE}")
     return PROMPT_FILE.read_text(encoding="utf-8")
+
+
+# A leading YAML frontmatter block (provenance injected by provenance.py) must
+# be stripped before chunking, otherwise it is embedded as a meaningless first
+# chunk and pollutes vector search.
+_FRONTMATTER_RE = re.compile(r"^﻿?---\s*\n.*?\n---\s*\n", re.DOTALL)
+
+
+def _strip_frontmatter(content: str) -> str:
+    """Remove a single leading YAML frontmatter block, if present."""
+    return _FRONTMATTER_RE.sub("", content, count=1)
+
+
+# Known standards bodies for the grain vertical, in match priority order.
+_KNOWN_STANDARDS = ["GAFTA", "CGC", "USDA", "FGIS", "IUA", "ICC", "ISO"]
+
+
+def _normalize_standard(name: str | None) -> str | None:
+    """Map a free-form issuing-organization name to a known standard enum value.
+
+    The metadata extractor records full organisation names (e.g. "Grain and
+    Feed Trade Association (GAFTA)"); the reference metadata schema expects the
+    acronym ("GAFTA"). Returns None when no known standard is recognised, which
+    is a valid (Optional) value for the schema.
+    """
+    if not name:
+        return None
+    upper = name.upper()
+    for code in _KNOWN_STANDARDS:
+        if code in upper:
+            return code
+    return None
+
+
+# Known standards bodies for the manufacturing vertical (ROADMAP §2.2).
+_KNOWN_STANDARD_BODIES = ["ASTM", "ISO", "DIN", "JIS", "SAE", "ANSI", "MIL", "EN"]
+
+
+def _normalize_standard_body(name: str | None) -> str | None:
+    """Map a free-form organisation name to a known manufacturing standards body."""
+    if not name:
+        return None
+    upper = name.upper()
+    for code in _KNOWN_STANDARD_BODIES:
+        # Word-ish boundary check keeps short codes like "EN" from matching
+        # inside unrelated words.
+        if re.search(rf"\b{code}\b", upper):
+            return code
+    return None
+
+
+def _build_base_metadata(vertical: str, metadata_block: dict[str, Any]) -> dict[str, Any]:
+    """Build the document-level metadata for a chunk, per vertical.
+
+    This is the seam that makes the pipeline vertical-agnostic: the chunk-level
+    `topic` is always tagged by the schema-driven LLM call, while the doc-level
+    fields are mapped from the provenance/metadata block according to the active
+    vertical's reference metadata schema.
+    """
+    doc_meta = metadata_block.get("document_metadata", {})
+    org_meta = metadata_block.get("issuing_organization", {})
+    geo_meta = metadata_block.get("geographic_scope", {})
+
+    if vertical == "manufacturing":
+        material_meta = metadata_block.get("material", {})
+        return {
+            "doc_type": doc_meta.get("document_type", "specification"),
+            "standard_body": _normalize_standard_body(org_meta.get("name")),
+            "material_class": material_meta.get("material_class"),
+            "export_control_regime": material_meta.get("export_control_regime"),
+            "process_type": material_meta.get("process_type", []),
+            "jurisdiction": geo_meta.get("jurisdictions", []),
+        }
+
+    # grain (default)
+    return {
+        "doc_type": doc_meta.get("document_type", "other"),
+        "standard": _normalize_standard(org_meta.get("name")),
+        "jurisdiction": geo_meta.get("jurisdictions", []),
+    }
 
 
 def _split_markdown_by_headings(content: str) -> list[dict[str, str]]:
@@ -109,11 +198,17 @@ async def _tag_chunk_topic(
     hierarchy: str,
     chunk_text: str,
     semaphore: asyncio.Semaphore,
+    allowed_topics: list[str],
 ) -> str:
-    """Call LLM to get the topic for a specific chunk."""
+    """Call LLM to get the topic for a specific chunk.
+
+    The returned topic is coerced to "general" if the model emits a value
+    outside the schema's controlled vocabulary, guaranteeing schema-valid output.
+    """
     template = _loadPromptTemplate()
-    
+
     def _sub(t: str) -> str:
+        t = t.replace("{{ALLOWED_TOPICS}}", ", ".join(allowed_topics))
         t = t.replace("{{SCHEMA_CONTENT}}", schema_content)
         t = t.replace("{{DOCUMENT_FILENAME}}", doc_filename)
         t = t.replace("{{HEADING_CONTEXT}}", hierarchy or "None")
@@ -146,10 +241,19 @@ async def _tag_chunk_topic(
         
         try:
             parsed = json.loads(response)
-            return parsed.get("topic", "general")
+            topic = parsed.get("topic", "general")
         except json.JSONDecodeError:
             logger.warning(f"Failed to parse LLM JSON output: {response}")
             return "general"
+
+        # Enforce the controlled vocabulary: anything off-enum becomes "general"
+        # so the JSONL always validates against the reference metadata schema.
+        if topic not in allowed_topics:
+            logger.warning(
+                "LLM returned off-vocabulary topic %r; coercing to 'general'.", topic
+            )
+            return "general"
+        return topic
 
 
 async def _embed_chunks(client: AsyncOpenAI, texts: list[str]) -> list[list[float]]:
@@ -178,6 +282,7 @@ async def _embed_chunks(client: AsyncOpenAI, texts: list[str]) -> list[list[floa
 async def process_document(
     markdown_path: str,
     schema_path: str,
+    vertical: str = "grain",
 ) -> str:
     """Process a markdown file into contextualized chunks with tags and embeddings."""
     md_file = Path(markdown_path)
@@ -188,11 +293,11 @@ async def process_document(
     if not schema_file.exists():
         raise FileNotFoundError(f"Schema file {schema_path} not found.")
 
-    doc_content = md_file.read_text(encoding="utf-8")
+    doc_content = _strip_frontmatter(md_file.read_text(encoding="utf-8"))
     schema_content = schema_file.read_text(encoding="utf-8")
     doc_stem = md_file.stem
     doc_filename = md_file.name
-    
+
     # 1. Semantic split
     raw_chunks = _split_markdown_by_headings(doc_content)
     
@@ -202,28 +307,23 @@ async def process_document(
     # Base provenance
     prov = getProvenance(doc_stem) or {}
     metadata_block = prov.get("extracted_metadata", {})
-    doc_meta = metadata_block.get("document_metadata", {})
-    org_meta = metadata_block.get("issuing_organization", {})
-    geo_meta = metadata_block.get("geographic_scope", {})
-    
-    # Use correct keys based on the metadata extraction schema
-    base_metadata = {
-        "doc_type": doc_meta.get("document_type", "unknown"),
-        "standard": org_meta.get("name", "unknown"),
-        "jurisdiction": geo_meta.get("jurisdictions", ["unknown"]),
-    }
+
+    # Document-level metadata, mapped according to the active vertical's schema.
+    base_metadata = _build_base_metadata(vertical, metadata_block)
     
     # 2. Tagging (Concurrent)
     sem = asyncio.Semaphore(10) # Max 10 concurrent requests
+    allowed_topics = get_allowed_topics(vertical)
     logger.info(f"Tagging {len(valid_chunks)} chunks for {doc_filename}...")
-    
+
     tasks = [
         _tag_chunk_topic(
             schema_content,
             doc_filename,
             c["hierarchy"],
             c["content"],
-            sem
+            sem,
+            allowed_topics,
         ) for c in valid_chunks
     ]
     
@@ -276,10 +376,11 @@ async def process_document(
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 3:
-        print("Usage: python chunk_and_embed.py <markdown_file> <schema_file>")
+        print("Usage: python chunk_and_embed.py <markdown_file> <schema_file> [vertical]")
         sys.exit(1)
-        
+
     md_path = sys.argv[1]
     sch_path = sys.argv[2]
-    
-    asyncio.run(process_document(md_path, sch_path))
+    vertical = sys.argv[3] if len(sys.argv) > 3 else "grain"
+
+    asyncio.run(process_document(md_path, sch_path, vertical))

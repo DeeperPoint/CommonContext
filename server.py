@@ -142,6 +142,7 @@ class ChunkAndEmbedRequest(BaseModel):
     """Request to process document into chunks, tag, and embed into JSONL."""
     documentPath: str
     schemaPath: str
+    vertical: str = "grain"
 
 
 # ── FastAPI App ────────────────────────────────────────────────────────────
@@ -644,7 +645,8 @@ async def chunkAndEmbedEndpoint(req: ChunkAndEmbedRequest) -> dict[str, Any]:
         from chunk_and_embed import process_document
         outfile_path = await process_document(
             markdown_path=req.documentPath,
-            schema_path=req.schemaPath
+            schema_path=req.schemaPath,
+            vertical=req.vertical,
         )
         return {"status": "success", "processedFile": outfile_path}
 

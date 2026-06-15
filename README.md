@@ -160,6 +160,41 @@ The schema analysis feature uses OpenRouter to send converted documents to an LL
 
 The analysis prompt is loaded from `prompts/schema_analysis.md` at runtime. Edit this file to adjust the analysis behaviour, output format, or domain-specific instructions — no code changes required.
 
+## Testing
+
+The suite is split into fast unit tests (no network, no DB) and an opt-in
+integration test that runs against a real Postgres + pgvector container.
+
+```bash
+# Install test dependencies (in addition to the runtime requirements)
+pip install pytest pytest-asyncio "psycopg[binary]" pgvector
+
+# Fast unit + end-to-end tests (paid LLM/embedding APIs are mocked)
+pytest -m "not integration"
+
+# Full suite including the Dockerized pgvector integration test
+#   (spins up docker-compose.test.yml, runs the real seed CLI, tears down)
+pytest -m integration        # requires Docker
+pytest                        # everything
+```
+
+What the suite covers:
+
+| Test file | Scope |
+| --------- | ----- |
+| `test_chunking.py` | Heading-based splitting, frontmatter stripping, standard/standard-body normalisation, vertical-aware metadata mapping |
+| `test_metadata_schema.py` | Grain + manufacturing pydantic schemas, registry, YAML generation |
+| `test_provenance.py` | Provenance record round-trip and frontmatter injection/merge |
+| `test_seed_validation.py` | Seed-record validation and JSONL I/O helpers |
+| `test_gap_signal.py` | Curatorial pull-signal model and emitter |
+| `test_pipeline_e2e.py` | Full chunk→tag→embed→JSONL run (external APIs mocked), schema-validated output |
+| `test_cross_vertical.py` | Same pipeline drives both grain and manufacturing verticals |
+| `test_output_artifacts.py` | Structural validation of on-disk `outputs/*.jsonl` |
+| `test_db_integration.py` | Real pgvector seed + metadata/vector retrieval queries + idempotent re-seed |
+
+The integration test auto-detects `docker compose` (v2) or `docker-compose`
+(v1) and skips cleanly if Docker is unavailable.
+
 ## Process Documentation
 
 For detailed information on the curation process, tools, and best practices, see:
