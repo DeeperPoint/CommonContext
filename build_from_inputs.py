@@ -58,11 +58,26 @@ def _discover_key(name: str) -> str:
 
 
 # ── 1. Convert every input to Markdown ───────────────────────────────────────
-def convert_all(*, full: bool) -> list[Path]:
+def _clean_outputs() -> None:
+    """Remove previously-generated artifacts so outputs/ reflects only the current inputs.
+    Only deletes regenerable files (.md and *_processed.jsonl); leaves anything else."""
+    if not OUTPUTS_DIR.exists():
+        return
+    removed = 0
+    for p in list(OUTPUTS_DIR.glob("*.md")) + list(OUTPUTS_DIR.glob("*_processed.jsonl")):
+        p.unlink()
+        removed += 1
+    if removed:
+        print(f"[clean] removed {removed} stale file(s) from {OUTPUTS_DIR.name}/")
+
+
+def convert_all(*, full: bool, clean: bool = True) -> list[Path]:
     """Convert each convertible file in inputs/ to outputs/<stem>.md. Returns the .md paths."""
     from convert_pdf import convertFile, getOutputPath
 
     OUTPUTS_DIR.mkdir(exist_ok=True)
+    if clean:
+        _clean_outputs()
     md_paths: list[Path] = []
     inputs = sorted(p for p in INPUTS_DIR.iterdir() if p.is_file() and p.suffix.lower() in _CONVERTIBLE)
     if not inputs:
@@ -203,6 +218,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--full", action="store_true", help="Use marker-pdf (ML/OCR) instead of fast extraction")
     parser.add_argument("--per-doc-chars", type=int, default=12000, help="Max chars per doc fed to the LLM")
     parser.add_argument("--skip-knowledge", action="store_true", help="Skip the embed/export step entirely")
+    parser.add_argument("--keep-outputs", action="store_true",
+                        help="Do NOT wipe stale .md/_processed.jsonl in outputs/ before converting")
     args = parser.parse_args(argv)
 
     key = _discover_key("OPENROUTER_API_KEY")
@@ -210,7 +227,7 @@ def main(argv: list[str] | None = None) -> int:
         print("OPENROUTER_API_KEY not found (env, CommonContext/.env, or ../Cosolvent/.env).", file=sys.stderr)
         return 1
 
-    md_paths = convert_all(full=args.full)
+    md_paths = convert_all(full=args.full, clean=not args.keep_outputs)
     schema = synthesize_schema(md_paths, model=args.model, key=key, per_doc_chars=args.per_doc_chars)
     if args.vertical:
         schema["vertical"] = args.vertical
