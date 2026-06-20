@@ -1,0 +1,146 @@
+# Copyright (c) 2026 Mustafa Uzumeri. All rights reserved.
+#
+# Industrial Machinery Trade — Domain Schema
+# ──────────────────────────────────────────
+# Participant-oriented trade schema for an industrial machinery marketplace,
+# in the same style as schemas/grain_trade_schema.yaml. Derived from the
+# machinery reference documents (IMTA Contract No. 7, Equipment Condition
+# Grading Standard, Heavy Haul Transport & Logistics Guide).
+#
+# This is the input to the marketplace.yaml generator (configgen). The
+# controlled vocabularies below (categories, brands, conditions, equipment
+# types, certifications) flow into the generated profile-field options.
+
+schema_version: "1.0"
+vertical: machinery_trade
+domain: industrial_machinery
+source_authority: "IMTA — International Machinery Traders Association"
+governing_law: "Laws of England"
+arbitration_body: "IMTA Arbitration Rules No. 41"
+
+# ── What is being traded ─────────────────────────────────────────────────
+goods:
+  description: >
+    Industrial machinery identified by category, brand, model, and condition.
+  fields:
+    machinery_category:
+      type: enum
+      description: "Primary machinery category"
+      allowed_values:
+        - Construction
+        - Agriculture
+        - Manufacturing / CNC
+        - Material Handling
+        - Mining
+        - Power Generation
+        - Forestry
+        - Oil & Gas
+      required: true
+
+    brand:
+      type: enum
+      description: "Equipment manufacturer / brand"
+      allowed_values:
+        - Caterpillar
+        - Komatsu
+        - John Deere
+        - Volvo
+        - Hitachi
+        - JCB
+        - Liebherr
+        - Doosan
+        - Mitsubishi
+        - Other
+      required: false
+
+    condition:
+      type: enum
+      description: "Condition designation per IMTA Grading Standard No. 12"
+      allowed_values: [New, Used, Refurbished, Parts Only]
+      required: true
+
+    certifications:
+      type: enum
+      description: "Compliance certifications a unit may carry"
+      allowed_values: ["ISO 9001", "CE Marking", "OSHA Compliant", "EPA Tier 4"]
+      required: false
+
+    origin_country:
+      type: enum
+      description: "Country the machinery originates from"
+      allowed_values:
+        ["USA", "Canada", "Mexico", "Germany", "Italy", "Japan",
+         "China", "South Korea", "India", "Brazil"]
+      required: true
+
+    average_unit_price_usd:
+      type: number
+      description: "Typical per-unit price in USD"
+      required: false
+
+# ── Logistics / facilitator services ─────────────────────────────────────
+logistics:
+  description: >
+    Transport and service attributes for facilitators moving the machinery.
+  fields:
+    equipment_types:
+      type: enum
+      description: "Trailer / haul equipment a carrier operates"
+      allowed_values:
+        - Flatbed
+        - Step Deck
+        - Double Drop / Lowboy
+        - Removable Gooseneck (RGN)
+        - Container
+        - Roll-On/Roll-Off
+        - Heavy Haul Specialized
+      required: true
+
+    carrier_certifications:
+      type: enum
+      description: "Carrier compliance credentials"
+      allowed_values: ["DOT Compliant", "ADR (EU)", "TIR Carnet", "ISO 9001", "C-TPAT"]
+      required: false
+
+# ── Mapping of trade parties to Cosolvent participant types ───────────────
+participant_roles:
+  description: >
+    Maps machinery-trade parties to Cosolvent supply / demand / facilitator roles.
+
+  supply:
+    label: "Seller"
+    description: >
+      The party offering machinery for sale — a dealer, OEM, auction house,
+      or end-user disposing of surplus assets.
+
+  demand:
+    label: "Buyer"
+    description: >
+      The party purchasing machinery — a contractor, manufacturer, mining
+      operator, rental fleet, government body, or reseller.
+
+  facilitator:
+    label: "Service Provider"
+    description: >
+      Intermediaries who facilitate the trade: transport, rigging, inspection,
+      customs, and insurance.
+    subtypes:
+      - role: "transport_carrier"
+        description: "Heavy-haul carrier moving the machinery"
+      - role: "rigging_specialist"
+        description: "Dismantling, loading, and heavy-lift rigging"
+      - role: "machinery_inspector"
+        description: "Independent pre-shipment condition inspection"
+      - role: "customs_broker"
+        description: "Export/import customs clearance"
+      - role: "cargo_insurer"
+        description: "Cargo / transit insurance"
+
+# ── Referenced standards (Knowledge Slot reference docs) ──────────────────
+referenced_standards:
+  - id: "IMTA_7"
+    title: "IMTA Contract No. 7 — Industrial Machinery Sale Agreement"
+  - id: "IMTA_12"
+    title: "IMTA Equipment Condition Grading Standard No. 12"
+  - id: "INCOTERMS_2020"
+    title: "INCOTERMS 2020 (EXW / FOB / CIF)"
