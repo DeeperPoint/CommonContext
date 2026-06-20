@@ -9,10 +9,11 @@ Pipeline (CommonContext half of the cross-repo build):
   3. [only if an embedding key exists] chunk_and_embed each doc -> *_processed.jsonl,
      then export_references                                  -> --refs-out
 
-Embeddings require a real OpenAI key (OpenRouter has no embeddings endpoint — see
-Cosolvent's provider registry, openrouter.supports_embeddings=False). Without
-OPENAI_API_KEY the knowledge-library track is skipped and only the schema is produced;
-the Cosolvent half (configgen -> compile) still runs.
+Embeddings run on the single OpenRouter key (model openai/text-embedding-3-small,
+1536-dim — matches Cosolvent's reference_library), falling back to a direct OpenAI key
+if that's all that's present. If neither key exists the knowledge-library track is
+skipped and only the schema is produced; the Cosolvent half (configgen -> compile)
+still runs.
 
 Usage:
     .venv/bin/python build_from_inputs.py
@@ -173,11 +174,12 @@ def _tag_vertical(vertical: str) -> str:
 
 def build_knowledge(md_paths: list[Path], schema_path: Path, vertical: str, refs_out: Path) -> bool:
     """Embed each doc and export an ingestion file. Returns True if it ran."""
-    if not _discover_key("OPENAI_API_KEY"):
+    # Embeddings run on the single OpenRouter key (model openai/text-embedding-3-small,
+    # 1536-dim) — falling back to a direct OpenAI key if that's all that's present.
+    if not (_discover_key("OPENROUTER_API_KEY") or _discover_key("OPENAI_API_KEY")):
         print(
-            "[knowledge] SKIPPED — no OPENAI_API_KEY found. OpenRouter has no embeddings "
-            "endpoint, so the knowledge library cannot be built without an OpenAI (or other "
-            "embedding-capable) key. Schema + marketplace + compile still proceed.",
+            "[knowledge] SKIPPED — no embedding key found (OPENROUTER_API_KEY or "
+            "OPENAI_API_KEY). Schema + marketplace + compile still proceed.",
             file=sys.stderr,
         )
         return False

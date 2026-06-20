@@ -40,12 +40,14 @@ python3 -m venv .venv
 
 API keys (env var, `CommonContext/.env`, or `../Cosolvent/.env` — all are searched):
 ```
-OPENROUTER_API_KEY=sk-or-...     # required: LLM for schema synthesis + chunk tagging (Claude)
-OPENAI_API_KEY=sk-...            # required ONLY for the knowledge library (embeddings)
+OPENROUTER_API_KEY=sk-or-...     # required: powers everything — schema synthesis, chunk
+                                 # tagging (Claude), AND embeddings (openai/text-embedding-3-small)
+OPENAI_API_KEY=sk-...            # optional fallback for embeddings if you have no OpenRouter key
 ```
-> OpenRouter has **no embeddings endpoint**, so building the knowledge library needs a
-> real OpenAI key. Without it, schema generation still works and the embed step is
-> skipped automatically.
+> A **single OpenRouter key** does everything, including embeddings — OpenRouter proxies
+> `openai/text-embedding-3-small` (1536-dim, matching Cosolvent's reference_library). A
+> direct OpenAI key is only used as a fallback. If neither key exists, schema generation
+> still works and the embed step is skipped automatically.
 
 ---
 
