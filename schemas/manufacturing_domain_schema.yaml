@@ -1,0 +1,114 @@
+# Copyright (c) 2026 Mustafa Uzumeri. All rights reserved.
+#
+# Specialty Manufacturing — Domain Schema (REPRESENTATIVE)
+# ────────────────────────────────────────────────────────
+# Analogue of schemas/grain_trade_schema.yaml for the manufacturing vertical
+# (ROADMAP Phase 5). This is a hand-authored, representative starter schema:
+# a real schema would be produced by running schema_analyzer.py over acquired
+# ISO/ASTM/DIN material specifications (which are paywalled). It encodes the
+# entities and controlled vocabulary that the chunk-tagging step constrains
+# against and that the reference_metadata_schema (tag vocabulary) draws from.
+
+schema_version: "0.1-representative"
+vertical: manufacturing
+domain: Specialty Manufacturing — Material Specifications & Standards
+
+# ── Core entities a material specification document describes ────────────────
+entities:
+  material:
+    description: The material a specification governs.
+    attributes:
+      designation: { type: string, example: "6061-T6" }
+      material_class:
+        type: enum
+        allowed_values:
+          [aluminum_alloy, carbon_steel, stainless_steel, titanium_alloy,
+           nickel_alloy, copper_alloy, polymer, composite, ceramic, other]
+      temper_condition: { type: string, example: "T6 (solution treated + artificially aged)" }
+      form: { type: enum, allowed_values: [sheet, plate, bar, tube, forging, casting, powder, wire] }
+
+  chemical_composition:
+    description: Permitted elemental composition ranges (heavily tabular).
+    attributes:
+      element: { type: string, example: "Magnesium" }
+      min_percent: { type: number }
+      max_percent: { type: number }
+
+  mechanical_property:
+    description: Required mechanical performance, by temper and temperature.
+    attributes:
+      property:
+        type: enum
+        allowed_values:
+          [ultimate_tensile_strength, yield_strength, elongation, hardness,
+           fatigue_strength, modulus_of_elasticity, impact_toughness]
+      value: { type: number }
+      unit: { type: enum, allowed_values: [MPa, GPa, HB, HRC, percent, J] }
+      test_temperature_c: { type: number }
+      condition: { type: string }
+
+  process_requirement:
+    description: Required manufacturing/processing operations and parameters.
+    attributes:
+      process_type:
+        type: enum
+        allowed_values:
+          [machining, casting, forging, rolling, extrusion, additive,
+           welding, heat_treatment, surface_coating, anodizing]
+      parameter: { type: string, example: "solution treatment temperature" }
+      value: { type: string, example: "530 +/- 5 C" }
+
+  dimensional_tolerance:
+    description: Permitted geometric/dimensional deviations.
+    attributes:
+      feature: { type: string, example: "thickness (3.0 mm nominal)" }
+      tolerance: { type: string, example: "+/- 0.13 mm" }
+
+  testing_inspection:
+    description: Required tests, sampling, and acceptance criteria.
+    attributes:
+      test_method: { type: string, example: "tensile test per referenced method" }
+      sampling: { type: string }
+      acceptance_criteria: { type: string }
+
+  certification:
+    description: Marking, traceability, and certificates of conformance.
+    attributes:
+      certificate_type: { type: string, example: "Certificate of Conformance" }
+      traceability: { type: string, example: "per heat/lot" }
+
+  export_control:
+    description: Export classification governing the material/process.
+    attributes:
+      regime: { type: enum, allowed_values: [EAR, ITAR, EU_dual_use, none] }
+      classification: { type: string, example: "EAR99" }
+
+# ── Standards bodies referenced by manufacturing documents ───────────────────
+standards_bodies:
+  - { code: ISO,  name: "International Organization for Standardization" }
+  - { code: ASTM, name: "ASTM International" }
+  - { code: DIN,  name: "Deutsches Institut für Normung" }
+  - { code: EN,   name: "European Norm (CEN)" }
+  - { code: JIS,  name: "Japanese Industrial Standards" }
+  - { code: SAE,  name: "SAE International" }
+
+# ── Chunk-level topic vocabulary (mirrors ManufacturingReferenceMetadata.topic) ─
+topics:
+  - chemical_composition
+  - mechanical_properties
+  - dimensional_tolerance
+  - surface_finish
+  - heat_treatment
+  - testing_inspection
+  - marking_certification
+  - packaging_handling
+  - storage_shelf_life
+  - process_requirements
+  - safety_handling
+  - general
+
+# ── Cross-references / referenced standards (candidates for future ingestion) ─
+referenced_standards_examples:
+  - "ISO 6892-1 (Metallic materials — Tensile testing)"
+  - "ASTM E8/E8M (Tension Testing of Metallic Materials)"
+  - "ASTM B209 (Aluminum and Aluminum-Alloy Sheet and Plate)"

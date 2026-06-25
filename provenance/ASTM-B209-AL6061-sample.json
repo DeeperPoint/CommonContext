@@ -1,0 +1,29 @@
+{
+  "source_url": "https://www.astm.org",
+  "source_type": "file_upload",
+  "document_title": "SAMPLE — Aluminum Alloy 6061-T6 Sheet Material Specification",
+  "output_filename": "ASTM-B209-AL6061-sample.md",
+  "conversion_method": "direct_import",
+  "notes": "SYNTHETIC SAMPLE for cross-vertical pipeline validation. Not a real ASTM standard.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "specification",
+      "title": "Aluminum Alloy 6061-T6 Sheet Material Specification (SAMPLE)",
+      "identifier": "ASTM-B209-SAMPLE"
+    },
+    "issuing_organization": {
+      "name": "ASTM International",
+      "type": "standards_body",
+      "country": "United States",
+      "website": "https://www.astm.org"
+    },
+    "geographic_scope": {
+      "jurisdictions": ["United States"]
+    },
+    "material": {
+      "material_class": "aluminum_alloy",
+      "export_control_regime": "EAR",
+      "process_type": ["rolling", "heat_treatment"]
+    }
+  }
+}
