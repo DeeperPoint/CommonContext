@@ -32,7 +32,7 @@ from openai import AsyncOpenAI
 from dotenv import load_dotenv
 
 # Re-use utilities
-from schema_analyzer import _discoverApiKey, _callOpenRouter
+from schema_analyzer import _callOpenRouter
 from provenance import getProvenance
 
 # The reference metadata models live in schemas/, which is not a package on the
@@ -256,8 +256,8 @@ async def _tag_chunk_topic(
         return topic
 
 
-async def _embed_chunks(client: AsyncOpenAI, texts: list[str]) -> list[list[float]]:
-    """Get embeddings from OpenAI, batching 100 at a time if needed."""
+async def _embed_chunks(client: AsyncOpenAI, texts: list[str], model: str = "text-embedding-3-small") -> list[list[float]]:
+    """Get embeddings from the configured provider, batching 100 at a time if needed."""
     embeddings = []
     # Process in batches to stay within safe limits
     batch_size = 100
@@ -270,7 +270,7 @@ async def _embed_chunks(client: AsyncOpenAI, texts: list[str]) -> list[list[floa
         )
         async def _do_embed():
             resp = await client.embeddings.create(
-                model="text-embedding-3-small",
+                model=model,
                 input=batch
             )
             return [data.embedding for data in resp.data]
@@ -330,28 +330,31 @@ async def process_document(
     topics = await asyncio.gather(*tasks)
     
     # 3. Preparing contextual content and Embedding
-    openai_key = os.environ.get("OPENAI_API_KEY", "")
-    if not openai_key:
+    # Prefer a SINGLE OpenRouter key for embeddings (model openai/text-embedding-3-small,
+    # 1536-dim — matches Cosolvent's reference_library). Fall back to a direct OpenAI key.
+    or_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    oa_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if not (or_key or oa_key):
         load_dotenv()
-        openai_key = os.environ.get("OPENAI_API_KEY", "")
-        if not openai_key:
-            logger.warning("OPENAI_API_KEY not found. Attempting OpenRouter key fallback for embeddings.")
-            openai_key = _discoverApiKey()
-    
-    # Check if OpenRouter key should be base
-    is_openrouter = openai_key.startswith("sk-or-v1")
-    client = AsyncOpenAI(
-        api_key=openai_key,
-        base_url="https://openrouter.ai/api/v1" if is_openrouter else None
-    )
+        or_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+        oa_key = os.environ.get("OPENAI_API_KEY", "").strip()
 
-    logger.info(f"Embedding {len(valid_chunks)} chunks...")
+    if or_key:
+        client = AsyncOpenAI(api_key=or_key, base_url="https://openrouter.ai/api/v1")
+        embed_model = "openai/text-embedding-3-small"
+    elif oa_key:
+        client = AsyncOpenAI(api_key=oa_key)
+        embed_model = "text-embedding-3-small"
+    else:
+        raise RuntimeError("No embedding key found — set OPENROUTER_API_KEY (preferred) or OPENAI_API_KEY.")
+
+    logger.info(f"Embedding {len(valid_chunks)} chunks via {embed_model}...")
     contextual_contents = [
         f"[{doc_filename}] {c['hierarchy']} > {c['content']}" if c['hierarchy'] else f"[{doc_filename}] {c['content']}"
         for c in valid_chunks
     ]
     
-    embeddings = await _embed_chunks(client, contextual_contents)
+    embeddings = await _embed_chunks(client, contextual_contents, embed_model)
     
     # 4. Stream to JSONL
     out_file = OUTPUT_DIR / f"{doc_stem}_processed.jsonl"
