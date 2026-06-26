@@ -121,12 +121,21 @@ cd CommonContext
 The knowledge export (`generated_refs.jsonl`) is loaded into Cosolvent's running database:
 
 ```bash
-cd ../Cosolvent/backend
-.venv/bin/python -m cli load-references \
+# from the repo root (cosolvent_beta/); the ../../ below is relative to Cosolvent/backend
+cd Cosolvent/backend
+POSTGRES_DSN='postgresql+asyncpg://postgres:postgres@localhost:15432/cosolvent' \
+    .venv/bin/python -m cli load-references \
     ../../CommonContext/generated_refs.jsonl --vertical <vertical>
 ```
 This requires the Cosolvent stack to be running (`make up`). After loading, the
 marketplace's Q&A / Knowledge Query endpoint can answer from these documents.
+
+> **Connection gotcha:** the CLI runs from `Cosolvent/backend/` and does **not**
+> auto-load `Cosolvent/.env`, so it falls back to port **5432**. The Docker stack
+> publishes Postgres on **15432**, so if you have any local Postgres on 5432 the CLI
+> will silently hit the wrong server (symptom: `InvalidCatalogNameError: database
+> "cosolvent" does not exist`). Pass `POSTGRES_DSN=...localhost:15432/cosolvent`
+> explicitly (as above), or `export` it / source the repo-root `.env` first.
 
 ---
 

@@ -2,238 +2,208 @@
 # Hand edits will be overwritten on the next build.
 
 schema_version: '1.0'
-vertical: industrial_machinery_trade
-domain: used_refurbished_machinery
-source_authority: International Machinery Traders Association (IMTA)
-governing_law: Laws of England
+vertical: machinery_trade
+domain: industrial_commercial_machinery
+source_authority: Global Machinery Marketplace Platform
 goods:
-  description: 'The industrial machinery units offered for sale, identified by category, brand, and condition.
+  description: 'Industrial and commercial machinery listed for sale across borders.
 
     '
   fields:
-    category:
+    machine_type:
       type: enum
-      description: Machinery category of the unit
+      description: Category of machinery being traded
       allowed_values:
       - construction
-      - agriculture
-      - manufacturing_cnc
-      - material_handling
+      - agricultural
       - mining
-      - power_generation
-      - forestry
-      - oil_and_gas
+      - manufacturing
+      - material_handling
+      - fleet_vehicle
+      - industrial_general
+      - commercial_equipment
       required: true
-    brand:
-      type: enum
-      description: Manufacturer brand of the unit
-      allowed_values:
-      - caterpillar
-      - komatsu
-      - john_deere
-      - volvo
-      - hitachi
-      - jcb
-      - liebherr
-      - doosan
-      - mitsubishi
-      required: true
-    model:
-      type: string
-      description: Model designation of the machinery unit
-      required: false
     condition:
       type: enum
-      description: Condition designation per IMTA Grading Standard No. 12
+      description: Operating condition of the machine
       allowed_values:
       - new
+      - like_new
       - used
       - refurbished
-      - parts_only
+      - for_parts
       required: true
+    age_years:
+      type: number
+      description: Age of the machine in years
+      required: false
     operating_hours:
       type: number
-      description: Disclosed operating hours of the unit
+      description: Total recorded operating hours
       required: false
-    emissions_standard:
+    region:
       type: enum
-      description: Declared diesel emissions standard
-      allowed_values:
-      - epa_tier_2
-      - epa_tier_3
-      - epa_tier_4
-      - eu_stage_v
-      required: false
-    origin_country:
-      type: enum
-      description: Country of origin of the goods
-      allowed_values:
-      - united_states
-      - canada
-      - mexico
-      - germany
-      - italy
-      - japan
-      - china
-      - south_korea
-      - india
-      - brazil
-      required: false
-quality:
-  description: 'Inspection and certification attributes establishing the verified condition of a unit.
-
-    '
-  fields:
-    structural_integrity:
-      type: enum
-      description: Inspection score for structural integrity
-      allowed_values:
-      - pass
-      - conditional
-      - fail
-      required: false
-    hydraulic_condition:
-      type: enum
-      description: Inspection score for hydraulic condition
-      allowed_values:
-      - pass
-      - conditional
-      - fail
-      required: false
-    tyre_track_wear_percent:
-      type: number
-      description: Tyre or track wear as a percentage
-      required: false
-    original_documentation:
-      type: boolean
-      description: Whether original documentation is present
-      required: false
-    certifications:
-      type: enum
-      description: Applicable conformity and compliance certifications
-      allowed_values:
-      - iso_9001
-      - ce_marking
-      - osha_compliant
-      - epa_tier_4
-      required: false
-finance:
-  description: 'Pricing and payment terms for a machinery unit.
-
-    '
-  fields:
-    price_band_usd:
-      type: enum
-      description: Per-unit value band in USD
-      allowed_values:
-      - under_25k
-      - 25k_100k
-      - 100k_500k
-      - 500k_2m
-      - 2m_and_above
-      required: true
-    payment_method:
-      type: enum
-      description: Method of payment settlement
-      allowed_values:
-      - irrevocable_letter_of_credit
-      - escrow_release_against_inspection
-      required: false
-    delivery_term:
-      type: enum
-      description: INCOTERMS 2020 delivery term
-      allowed_values:
-      - exw
-      - fob
-      - cif
-      required: true
-logistics:
-  description: 'Transport and customs attributes for moving machinery across borders.
-
-    '
-  fields:
-    equipment_type:
-      type: enum
-      description: Trailer or transport equipment type
-      allowed_values:
-      - flatbed
-      - step_deck
-      - double_drop_lowboy
-      - removable_gooseneck_rgn
-      - container
-      - roll_on_roll_off
-      - heavy_haul_specialized
-      required: false
-    service_region:
-      type: enum
-      description: Regions served by the carrier
+      description: Geographic region where the machine is located
       allowed_values:
       - north_america
       - south_america
       - europe
-      - middle_east
       - africa
-      - south_asia
-      - east_asia
-      - southeast_asia
+      - middle_east
+      - asia
       - oceania
-      required: false
-    cross_border_capable:
-      type: boolean
-      description: Whether the carrier offers cross-border movement
-      required: false
-    carrier_credentials:
+      required: true
+    availability:
       type: enum
-      description: Compliance credentials held by the carrier
+      description: Current availability status of the listing
       allowed_values:
-      - dot_compliant
-      - adr
-      - tir_carnet
-      - iso_9001
-      - c_tpat
+      - available
+      - reserved
+      - in_negotiation
+      - sold
+      - pending_delivery
+      required: true
+    certifications:
+      type: string
+      description: Certifications and compliance documents attached to the listing
       required: false
-    cargo_insurance_usd:
-      type: number
-      description: Cargo insurance coverage in USD
+    maintenance_history:
+      type: boolean
+      description: Whether maintenance history records are attached
+      required: false
+quality:
+  description: 'Trust and verification attributes that establish machine and seller credibility.
+
+    '
+  fields:
+    seller_verification:
+      type: enum
+      description: Verification status of the selling party
+      allowed_values:
+      - unverified
+      - email_verified
+      - document_verified
+      - fully_verified
+      required: true
+    inspection_report:
+      type: boolean
+      description: Whether an independent inspection report is available
+      required: false
+    machine_identity_record:
+      type: boolean
+      description: Whether a unique machine identity record exists
+      required: false
+    verification_badge:
+      type: enum
+      description: Trust badge awarded based on platform history
+      allowed_values:
+      - none
+      - bronze
+      - silver
+      - gold
+      - enterprise
+      required: false
+finance:
+  description: 'Commercial and payment terms governing a machinery transaction.
+
+    '
+  fields:
+    currency:
+      type: enum
+      description: Settlement currency for the transaction
+      allowed_values:
+      - USD
+      - EUR
+      - GBP
+      - JPY
+      - CNY
+      - AUD
+      - CAD
+      required: true
+    payment_method:
+      type: enum
+      description: Mechanism used to settle the deal
+      allowed_values:
+      - escrow
+      - bank_transfer
+      - financing
+      - trade_credit
+      - letter_of_credit
+      required: true
+    financing_available:
+      type: boolean
+      description: Whether financing proposals are offered for the listing
+      required: false
+    deal_stage:
+      type: enum
+      description: Current stage in the deal lifecycle
+      allowed_values:
+      - discovery
+      - qualification
+      - communication
+      - negotiation
+      - agreement
+      - escrow
+      - logistics
+      - delivery
+      - completion
+      required: false
+logistics:
+  description: 'Cross-border movement and delivery attributes for traded machinery.
+
+    '
+  fields:
+    customs_handling:
+      type: boolean
+      description: Whether customs and import/export handling is required
+      required: false
+    delivery_terms:
+      type: enum
+      description: Agreed delivery and shipping terms
+      allowed_values:
+      - ex_works
+      - fob
+      - cif
+      - dap
+      - ddp
+      - buyer_arranged
+      required: false
+    cross_border:
+      type: boolean
+      description: Whether the transaction crosses international borders
       required: false
 participant_roles:
-  description: 'Maps the machinery trade parties to marketplace role kinds.
+  description: 'Maps machinery trade parties to marketplace role kinds.
 
     '
   supply:
     label: Seller
-    description: 'The party offering machinery for sale — a dealer, original equipment manufacturer, auction
-      house, or end-user disposing of surplus assets.
+    description: 'Manufacturers, resellers, and fleet owners publishing machinery inventory with specifications,
+      certifications, and maintenance history.
 
       '
   demand:
     label: Buyer
-    description: 'The party purchasing the machinery — a contractor, manufacturer, mining operator, rental
-      fleet, government body, or reseller.
+    description: 'Construction companies, agricultural operators, mining firms, and independent buyers
+      sourcing machinery through structured search and negotiation.
 
       '
   facilitator:
     label: Service Provider
-    description: 'Parties engaged by the Seller or Buyer to facilitate inspection, dismantling, transport,
-      and customs clearance of the Goods.
+    description: 'Intermediaries who enable discovery, trust, financing, and delivery of deals.
 
       '
     subtypes:
-    - role: transport_carrier
-      description: Moves machinery via flatbed, lowboy, RoRo, or specialized heavy haul equipment.
-    - role: rigging_heavy_lift_specialist
-      description: Handles lifting, loading, and dismantling of heavy or over-dimensional units.
-    - role: machinery_inspector
-      description: Verifies operating hours, structural integrity, and condition designation.
-    - role: customs_broker
-      description: Handles duties, taxes, and HS tariff classification at origin and destination.
-    - role: cargo_insurer
-      description: Provides cargo insurance coverage for machinery in transit.
+    - role: broker
+      description: Intermediary who connects buyers and sellers and facilitates negotiation.
+    - role: inspection_service
+      description: Provides independent inspection reports verifying machine condition.
+    - role: financing_provider
+      description: Offers financing proposals and trade financing for transactions.
+    - role: logistics_provider
+      description: Handles shipping, customs, and cross-border delivery of machinery.
+    - role: escrow_agent
+      description: Holds funds securely until deal completion and delivery.
 referenced_standards:
-- id: imta_contract_7
-  title: IMTA Contract No. 7 — Standard Agreement for the Sale of Used & Refurbished Industrial Machinery
-    (2025 Edition)
-- id: imta_grading_12
-  title: IMTA Equipment Condition Grading Standard No. 12 (2025)
-- id: heavy_haul_guide_2025
-  title: Heavy Haul Transport & Logistics Guide (2025)
+- id: GMMP-WP
+  title: Global Machinery Marketplace Platform Whitepaper
