@@ -69,11 +69,13 @@ reference_metadata_schema:
     export_control_regime:
       type: enum
       allowed_values:
-      - EAR
-      - ITAR
-      - EU_dual_use
+      - CGP
+      - EIPA
       - none
-      description: Export control regime governing the material or process, if any.
+      description: >
+        Controlled-goods / export regime governing the material or process, if any.
+        Canada-first: CGP (Controlled Goods Program) and EIPA (Export and Import
+        Permits Act) replace the US ITAR/EAR framing.
     process_type:
       type: array
       description: Manufacturing processes the document covers (machining, casting,

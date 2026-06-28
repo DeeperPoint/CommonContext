@@ -1,0 +1,23 @@
+{
+  "source_url": "https://scmep.org/guest-post-selling-used-cnc-machines-getting-started/",
+  "source_type": "direct_import",
+  "document_title": "SCMEP: Guide to Selling Used CNC Machines",
+  "output_filename": "source_scmep_selling_used_cnc_machines.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "guide",
+      "title": "SCMEP: Guide to Selling Used CNC Machines",
+      "identifier": "source_scmep_selling_used_cnc_machines"
+    },
+    "geographic_scope": {
+      "jurisdictions": [
+        "USA"
+      ]
+    },
+    "issuing_organization": {
+      "name": "South Carolina Manufacturing Extension Partnership (SCMEP)"
+    }
+  }
+}

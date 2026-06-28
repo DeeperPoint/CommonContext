@@ -1,0 +1,21 @@
+{
+  "source_url": null,
+  "source_type": "direct_import",
+  "document_title": "Nickel and Iron-Base Superalloys for Aerospace Machining",
+  "output_filename": "nickel_iron_superalloys.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "specification",
+      "title": "Nickel and Iron-Base Superalloys for Aerospace Machining",
+      "identifier": "nickel_iron_superalloys"
+    },
+    "geographic_scope": {
+      "jurisdictions": []
+    },
+    "material": {
+      "material_class": "nickel_alloy"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "source_url": null,
+  "source_type": "direct_import",
+  "document_title": "Aerospace Aluminum Alloys (7075-T6, 6061-T6)",
+  "output_filename": "aerospace_aluminum.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "specification",
+      "title": "Aerospace Aluminum Alloys (7075-T6, 6061-T6)",
+      "identifier": "aerospace_aluminum"
+    },
+    "geographic_scope": {
+      "jurisdictions": []
+    },
+    "material": {
+      "material_class": "aluminum_alloy"
+    }
+  }
+}

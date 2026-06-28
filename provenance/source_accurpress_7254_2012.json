@@ -1,0 +1,23 @@
+{
+  "source_url": "https://www.tradermachinery.com/listings/8314442-used-25-ton-x-4-accurpress-model-7254-cnc-hydraulic-press-brake-2012",
+  "source_type": "direct_import",
+  "document_title": "Accurpress 7254 2012 Spec Sheet",
+  "output_filename": "source_accurpress_7254_2012.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "datasheet",
+      "title": "Accurpress 7254 2012 Spec Sheet",
+      "identifier": "source_accurpress_7254_2012"
+    },
+    "geographic_scope": {
+      "jurisdictions": [
+        "Canada"
+      ]
+    },
+    "issuing_organization": {
+      "name": "Trader Machinery"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "source_url": null,
+  "source_type": "direct_import",
+  "document_title": "Agma VMC-158 (2007)",
+  "output_filename": "agma_vmc158_2007.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "datasheet",
+      "title": "Agma VMC-158 (2007)",
+      "identifier": "agma_vmc158_2007"
+    },
+    "geographic_scope": {
+      "jurisdictions": []
+    }
+  }
+}

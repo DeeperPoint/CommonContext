@@ -1,0 +1,23 @@
+{
+  "source_url": null,
+  "source_type": "direct_import",
+  "document_title": "CNC Milling Operations by Axis Count (3-, 4-, 5-Axis)",
+  "output_filename": "cnc_milling_operations.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "guide",
+      "title": "CNC Milling Operations by Axis Count (3-, 4-, 5-Axis)",
+      "identifier": "cnc_milling_operations"
+    },
+    "geographic_scope": {
+      "jurisdictions": []
+    },
+    "material": {
+      "process_type": [
+        "machining"
+      ]
+    }
+  }
+}

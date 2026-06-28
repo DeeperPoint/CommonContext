@@ -1,0 +1,18 @@
+{
+  "source_url": null,
+  "source_type": "direct_import",
+  "document_title": "Industrial Machinery Rigging, Transport, and Logistics",
+  "output_filename": "machinery_logistics_rigging.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "guide",
+      "title": "Industrial Machinery Rigging, Transport, and Logistics",
+      "identifier": "machinery_logistics_rigging"
+    },
+    "geographic_scope": {
+      "jurisdictions": []
+    }
+  }
+}

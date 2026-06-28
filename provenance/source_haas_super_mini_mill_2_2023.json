@@ -1,0 +1,23 @@
+{
+  "source_url": "https://cncmachines.com/haas-super-mini-mill-2-2023/l/15255",
+  "source_type": "direct_import",
+  "document_title": "Haas Super Mini Mill 2 2023 Spec Sheet",
+  "output_filename": "source_haas_super_mini_mill_2_2023.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "datasheet",
+      "title": "Haas Super Mini Mill 2 2023 Spec Sheet",
+      "identifier": "source_haas_super_mini_mill_2_2023"
+    },
+    "geographic_scope": {
+      "jurisdictions": [
+        "Global"
+      ]
+    },
+    "issuing_organization": {
+      "name": "CNC Machines"
+    }
+  }
+}

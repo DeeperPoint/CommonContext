@@ -1,0 +1,18 @@
+{
+  "source_url": null,
+  "source_type": "direct_import",
+  "document_title": "Akbend ASM 140-20/4.0 (2015)",
+  "output_filename": "akbend_asm140_2015.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "datasheet",
+      "title": "Akbend ASM 140-20/4.0 (2015)",
+      "identifier": "akbend_asm140_2015"
+    },
+    "geographic_scope": {
+      "jurisdictions": []
+    }
+  }
+}

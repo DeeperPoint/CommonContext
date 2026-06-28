@@ -1,0 +1,23 @@
+{
+  "source_url": "https://www.tpsgc-pwgsc.gc.ca/pmc-cgp/index-eng.html",
+  "source_type": "direct_import",
+  "document_title": "Canada Controlled Goods Program & Export and Import Permits Act",
+  "output_filename": "source_canada_controlled_goods_eipa.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "regulation",
+      "title": "Canada Controlled Goods Program & Export and Import Permits Act",
+      "identifier": "source_canada_controlled_goods_eipa"
+    },
+    "geographic_scope": {
+      "jurisdictions": [
+        "Canada"
+      ]
+    },
+    "issuing_organization": {
+      "name": "Public Services and Procurement Canada; Global Affairs Canada"
+    }
+  }
+}

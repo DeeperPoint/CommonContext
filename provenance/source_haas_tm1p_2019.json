@@ -1,0 +1,23 @@
+{
+  "source_url": "https://www.tradermachinery.com/listings/8134975-used-30-x-12-y-16-z-haas-tm-1p-2019-cnc-vertical-toolroom-mill-installed-2020",
+  "source_type": "direct_import",
+  "document_title": "Haas TM-1P 2019 Spec Sheet",
+  "output_filename": "source_haas_tm1p_2019.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "datasheet",
+      "title": "Haas TM-1P 2019 Spec Sheet",
+      "identifier": "source_haas_tm1p_2019"
+    },
+    "geographic_scope": {
+      "jurisdictions": [
+        "Canada"
+      ]
+    },
+    "issuing_organization": {
+      "name": "Trader Machinery"
+    }
+  }
+}

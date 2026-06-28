@@ -1,0 +1,24 @@
+{
+  "source_url": "https://solidhook.ca/understanding-machinery-moving-regulations-in-ontario/",
+  "source_type": "direct_import",
+  "document_title": "Understanding Machinery Moving Regulations in Ontario",
+  "output_filename": "source_solidhook_ontario_regulations.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "guide",
+      "title": "Understanding Machinery Moving Regulations in Ontario",
+      "identifier": "source_solidhook_ontario_regulations"
+    },
+    "geographic_scope": {
+      "jurisdictions": [
+        "Canada",
+        "Ontario"
+      ]
+    },
+    "issuing_organization": {
+      "name": "SolidHook Inc."
+    }
+  }
+}

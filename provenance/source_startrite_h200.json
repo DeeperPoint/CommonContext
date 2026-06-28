@@ -1,0 +1,23 @@
+{
+  "source_url": "https://www.tradermachinery.com/listings/8910904-used-8-x-8-startrite-horizontal-bandsaw",
+  "source_type": "direct_import",
+  "document_title": "Startrite H200 Spec Sheet",
+  "output_filename": "source_startrite_h200.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "datasheet",
+      "title": "Startrite H200 Spec Sheet",
+      "identifier": "source_startrite_h200"
+    },
+    "geographic_scope": {
+      "jurisdictions": [
+        "Canada"
+      ]
+    },
+    "issuing_organization": {
+      "name": "Trader Machinery"
+    }
+  }
+}

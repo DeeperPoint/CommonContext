@@ -1,0 +1,24 @@
+{
+  "source_url": "https://readymachinery.com/",
+  "source_type": "direct_import",
+  "document_title": "Ready Machinery Movers Service Index",
+  "output_filename": "source_ready_machinery.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "other",
+      "title": "Ready Machinery Movers Service Index",
+      "identifier": "source_ready_machinery"
+    },
+    "geographic_scope": {
+      "jurisdictions": [
+        "Canada",
+        "USA"
+      ]
+    },
+    "issuing_organization": {
+      "name": "Ready Machinery Movers"
+    }
+  }
+}

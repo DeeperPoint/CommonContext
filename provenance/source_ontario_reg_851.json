@@ -1,0 +1,24 @@
+{
+  "source_url": "https://www.ontario.ca/laws/regulation/900851",
+  "source_type": "direct_import",
+  "document_title": "Ontario Regulation 851: Industrial Establishments",
+  "output_filename": "source_ontario_reg_851.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "regulation",
+      "title": "Ontario Regulation 851: Industrial Establishments",
+      "identifier": "source_ontario_reg_851"
+    },
+    "geographic_scope": {
+      "jurisdictions": [
+        "Canada",
+        "Ontario"
+      ]
+    },
+    "issuing_organization": {
+      "name": "Government of Ontario"
+    }
+  }
+}

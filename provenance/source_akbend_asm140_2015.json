@@ -1,0 +1,23 @@
+{
+  "source_url": "https://www.tradermachinery.com/listings/8451174-used-5-32-x-80-akbend-hydraulic-initial-pinch-plate-rolls-2015",
+  "source_type": "direct_import",
+  "document_title": "Akbend ASM 140-20/4.0 Spec Sheet",
+  "output_filename": "source_akbend_asm140_2015.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "datasheet",
+      "title": "Akbend ASM 140-20/4.0 Spec Sheet",
+      "identifier": "source_akbend_asm140_2015"
+    },
+    "geographic_scope": {
+      "jurisdictions": [
+        "Canada"
+      ]
+    },
+    "issuing_organization": {
+      "name": "Trader Machinery"
+    }
+  }
+}

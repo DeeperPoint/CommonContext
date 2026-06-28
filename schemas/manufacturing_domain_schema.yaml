@@ -78,10 +78,14 @@ entities:
       traceability: { type: string, example: "per heat/lot" }
 
   export_control:
-    description: Export classification governing the material/process.
+    description: >
+      Export/controlled-goods classification governing the material/process.
+      Canada-first: the Controlled Goods Program (CGP) and the Export and Import
+      Permits Act (EIPA) replace the US ITAR/EAR framing. See
+      wiki/pages/concepts/canada_export_controls.md.
     attributes:
-      regime: { type: enum, allowed_values: [EAR, ITAR, EU_dual_use, none] }
-      classification: { type: string, example: "EAR99" }
+      regime: { type: enum, allowed_values: [CGP, EIPA, none] }
+      classification: { type: string, example: "ECL Group 2 (munitions)" }
 
 # ── Standards bodies referenced by manufacturing documents ───────────────────
 standards_bodies:

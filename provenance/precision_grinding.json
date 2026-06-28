@@ -1,0 +1,23 @@
+{
+  "source_url": null,
+  "source_type": "direct_import",
+  "document_title": "Precision Grinding (Surface and Cylindrical)",
+  "output_filename": "precision_grinding.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "guide",
+      "title": "Precision Grinding (Surface and Cylindrical)",
+      "identifier": "precision_grinding"
+    },
+    "geographic_scope": {
+      "jurisdictions": []
+    },
+    "material": {
+      "process_type": [
+        "machining"
+      ]
+    }
+  }
+}

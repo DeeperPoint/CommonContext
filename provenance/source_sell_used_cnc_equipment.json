@@ -1,0 +1,23 @@
+{
+  "source_url": "https://www.meadoworks.com/resources/how-to-sell-used-cnc-equipment",
+  "source_type": "direct_import",
+  "document_title": "Guide: How to Sell Used CNC Equipment",
+  "output_filename": "source_sell_used_cnc_equipment.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "guide",
+      "title": "Guide: How to Sell Used CNC Equipment",
+      "identifier": "source_sell_used_cnc_equipment"
+    },
+    "geographic_scope": {
+      "jurisdictions": [
+        "Global"
+      ]
+    },
+    "issuing_organization": {
+      "name": "Meadoworks"
+    }
+  }
+}

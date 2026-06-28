@@ -68,7 +68,7 @@ def transform_record(record: dict[str, Any], vertical: str) -> dict[str, Any] | 
 def export_files(paths: list[Path], vertical: str) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for path in paths:
-        for line in path.read_text().splitlines():
+        for line in path.read_text(encoding="utf-8").splitlines():
             line = line.strip()
             if not line:
                 continue
@@ -98,7 +98,7 @@ def main(argv: list[str] | None = None) -> int:
     records = export_files(paths, args.vertical)
     lines = "\n".join(json.dumps(r) for r in records)
     if args.output:
-        Path(args.output).write_text(lines + "\n")
+        Path(args.output).write_text(lines + "\n", encoding="utf-8")
         print(f"✓ Wrote {len(records)} ingestion record(s) to {args.output}", file=sys.stderr)
     else:
         print(lines)

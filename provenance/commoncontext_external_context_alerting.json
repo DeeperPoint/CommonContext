@@ -1,0 +1,18 @@
+{
+  "source_url": null,
+  "source_type": "direct_import",
+  "document_title": "CommonContext External-Idiosyncrasy Alerting for Matches",
+  "output_filename": "commoncontext_external_context_alerting.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "guide",
+      "title": "CommonContext External-Idiosyncrasy Alerting for Matches",
+      "identifier": "commoncontext_external_context_alerting"
+    },
+    "geographic_scope": {
+      "jurisdictions": []
+    }
+  }
+}

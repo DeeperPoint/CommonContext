@@ -1,0 +1,21 @@
+{
+  "source_url": null,
+  "source_type": "direct_import",
+  "document_title": "Precipitation-Hardening Stainless Steels (17-4 PH, 15-5 PH)",
+  "output_filename": "precipitation_hardening_stainless.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "specification",
+      "title": "Precipitation-Hardening Stainless Steels (17-4 PH, 15-5 PH)",
+      "identifier": "precipitation_hardening_stainless"
+    },
+    "geographic_scope": {
+      "jurisdictions": []
+    },
+    "material": {
+      "material_class": "stainless_steel"
+    }
+  }
+}

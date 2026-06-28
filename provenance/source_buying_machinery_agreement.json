@@ -1,0 +1,20 @@
+{
+  "source_url": null,
+  "source_type": "direct_import",
+  "document_title": "Agreement for Buying Machinery (Template)",
+  "output_filename": "source_buying_machinery_agreement.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "other",
+      "title": "Agreement for Buying Machinery (Template)",
+      "identifier": "source_buying_machinery_agreement"
+    },
+    "geographic_scope": {
+      "jurisdictions": [
+        "IN"
+      ]
+    }
+  }
+}

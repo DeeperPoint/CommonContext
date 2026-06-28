@@ -1,0 +1,18 @@
+{
+  "source_url": null,
+  "source_type": "direct_import",
+  "document_title": "Machinery Purchase Contracts and Agreements",
+  "output_filename": "machinery_purchase_contracts.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "guide",
+      "title": "Machinery Purchase Contracts and Agreements",
+      "identifier": "machinery_purchase_contracts"
+    },
+    "geographic_scope": {
+      "jurisdictions": []
+    }
+  }
+}

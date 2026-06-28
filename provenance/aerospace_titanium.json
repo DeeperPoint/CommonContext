@@ -1,0 +1,21 @@
+{
+  "source_url": null,
+  "source_type": "direct_import",
+  "document_title": "Aerospace Titanium Alloy Ti-6Al-4V",
+  "output_filename": "aerospace_titanium.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "specification",
+      "title": "Aerospace Titanium Alloy Ti-6Al-4V",
+      "identifier": "aerospace_titanium"
+    },
+    "geographic_scope": {
+      "jurisdictions": []
+    },
+    "material": {
+      "material_class": "titanium_alloy"
+    }
+  }
+}

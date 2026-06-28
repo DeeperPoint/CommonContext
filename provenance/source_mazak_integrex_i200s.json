@@ -1,0 +1,23 @@
+{
+  "source_url": "https://cncmachines.com/m/mazak/integrex-i200s",
+  "source_type": "direct_import",
+  "document_title": "Mazak Integrex i200S Spec Sheet",
+  "output_filename": "source_mazak_integrex_i200s.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "datasheet",
+      "title": "Mazak Integrex i200S Spec Sheet",
+      "identifier": "source_mazak_integrex_i200s"
+    },
+    "geographic_scope": {
+      "jurisdictions": [
+        "Global"
+      ]
+    },
+    "issuing_organization": {
+      "name": "CNC Machines"
+    }
+  }
+}

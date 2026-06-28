@@ -1,0 +1,18 @@
+{
+  "source_url": null,
+  "source_type": "direct_import",
+  "document_title": "Mill/Turn Processes and Single-Piece Flow",
+  "output_filename": "mill_turn_process.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "guide",
+      "title": "Mill/Turn Processes and Single-Piece Flow",
+      "identifier": "mill_turn_process"
+    },
+    "geographic_scope": {
+      "jurisdictions": []
+    }
+  }
+}

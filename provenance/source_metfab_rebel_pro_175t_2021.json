@@ -1,0 +1,23 @@
+{
+  "source_url": "https://www.tradermachinery.com/listings/9083757-used-175-ton-x-22-metfab-cnc-hydraulic-press-brake-2021",
+  "source_type": "direct_import",
+  "document_title": "Metfab Rebel Pro 175T 2021 Spec Sheet",
+  "output_filename": "source_metfab_rebel_pro_175t_2021.md",
+  "conversion_method": "wiki_export",
+  "notes": "Generated from mfgllmwiki page frontmatter by wiki_to_provenance.py.",
+  "extracted_metadata": {
+    "document_metadata": {
+      "document_type": "datasheet",
+      "title": "Metfab Rebel Pro 175T 2021 Spec Sheet",
+      "identifier": "source_metfab_rebel_pro_175t_2021"
+    },
+    "geographic_scope": {
+      "jurisdictions": [
+        "Canada"
+      ]
+    },
+    "issuing_organization": {
+      "name": "Trader Machinery"
+    }
+  }
+}
