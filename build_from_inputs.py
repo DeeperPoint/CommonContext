@@ -211,6 +211,28 @@ def build_knowledge(md_paths: list[Path], schema_path: Path, vertical: str, refs
     return True
 
 
+# ── 2b. LLM Wiki ingest (optional intermediate synthesis layer) ──────────────
+WIKI_DIR = HERE / "wiki"
+
+
+def build_wiki(md_paths: list[Path], *, model: str, schema_path: Path | None) -> list[Path]:
+    """Incrementally fold each converted doc into wiki/ (persistent, not wiped). Returns wiki pages."""
+    import wiki_ingest  # local import: the wiki subsystem is optional
+
+    import datetime as _dt
+
+    key = _discover_key("OPENROUTER_API_KEY")
+    today = _dt.date.today().isoformat()
+    print(f"[wiki] ingesting {len(md_paths)} doc(s) into {WIKI_DIR.name}/ via {model} ...")
+    for md in md_paths:
+        try:
+            wiki_ingest.ingest_document(md, model=model, key=key, schema_path=schema_path,
+                                        today=today, dry_run=False)
+        except Exception as exc:  # a bad doc shouldn't sink the build
+            print(f"  WARN: wiki ingest failed for {md.name}: {exc}", file=sys.stderr)
+    return wiki_ingest._iter_pages()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build a Cosolvent schema (+ knowledge) from inputs/.")
     parser.add_argument("--out-schema", default="schemas/generated_schema.yaml")
@@ -222,6 +244,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--skip-knowledge", action="store_true", help="Skip the embed/export step entirely")
     parser.add_argument("--keep-outputs", action="store_true",
                         help="Do NOT wipe stale .md/_processed.jsonl in outputs/ before converting")
+    parser.add_argument("--skip-wiki", action="store_true",
+                        help="Skip the LLM Wiki ingest step (default: run it if wiki/ is scaffolded)")
+    parser.add_argument("--wiki-model", default=os.environ.get("WIKI_MODEL", "anthropic/claude-sonnet-5"),
+                        help="Model for wiki ingest (default: Sonnet 5)")
+    parser.add_argument("--schema-from-wiki", action="store_true",
+                        help="Synthesize the domain schema from wiki/ pages instead of raw docs (avoids truncation)")
     args = parser.parse_args(argv)
 
     key = _discover_key("OPENROUTER_API_KEY")
@@ -230,7 +258,27 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     md_paths = convert_all(full=args.full, clean=not args.keep_outputs)
-    schema = synthesize_schema(md_paths, model=args.model, key=key, per_doc_chars=args.per_doc_chars)
+
+    # Optional wiki ingest: build the synthesized knowledge layer before deriving artifacts.
+    prior_schema = (HERE / args.out_schema).resolve()
+    wiki_enabled = (WIKI_DIR / "CONVENTIONS.md").exists() and not args.skip_wiki
+    wiki_pages: list[Path] = []
+    if wiki_enabled:
+        wiki_pages = build_wiki(md_paths, model=args.wiki_model,
+                                schema_path=prior_schema if prior_schema.exists() else None)
+    elif args.skip_wiki:
+        print("[wiki] skipped (--skip-wiki)")
+
+    # Schema source: wiki pages (curated, no truncation) if requested & available, else raw docs.
+    schema_sources = md_paths
+    if args.schema_from_wiki:
+        if wiki_pages:
+            print(f"[schema] using {len(wiki_pages)} wiki page(s) as the synthesis source")
+            schema_sources = wiki_pages
+        else:
+            print("[schema] --schema-from-wiki set but no wiki pages; falling back to raw docs", file=sys.stderr)
+
+    schema = synthesize_schema(schema_sources, model=args.model, key=key, per_doc_chars=args.per_doc_chars)
     if args.vertical:
         schema["vertical"] = args.vertical
     out_schema = (HERE / args.out_schema).resolve()
