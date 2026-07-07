@@ -93,8 +93,8 @@ def render_page(fields: dict, body: str) -> str:
 
 
 def _iter_pages() -> list[Path]:
-    """All wiki pages (markdown with frontmatter), excluding meta files."""
-    skip = {CONVENTIONS_PATH, INDEX_PATH, LOG_PATH}
+    """All wiki content pages (markdown with frontmatter), excluding meta/generated files."""
+    skip = {CONVENTIONS_PATH, INDEX_PATH, LOG_PATH, WIKI_DIR / "lint-report.md"}
     return sorted(p for p in WIKI_DIR.rglob("*.md") if p not in skip)
 
 
