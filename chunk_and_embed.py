@@ -283,12 +283,21 @@ async def process_document(
     markdown_path: str,
     schema_path: str,
     vertical: str = "grain",
+    *,
+    source_layer: str = "raw",
+    identity_stem: str | None = None,
 ) -> str:
-    """Process a markdown file into contextualized chunks with tags and embeddings."""
+    """Process a markdown file into contextualized chunks with tags and embeddings.
+
+    ``source_layer`` ("raw" | "wiki") is stamped on every chunk's metadata so the
+    reference library can prefer high-signal wiki chunks and fall back to raw ones.
+    ``identity_stem`` overrides the id/output-file stem (used for wiki pages, whose
+    filenames can collide with raw docs — e.g. sources/27_2025.md vs 27_2025.pdf).
+    """
     md_file = Path(markdown_path)
     if not md_file.exists():
         raise FileNotFoundError(f"Markdown file {markdown_path} not found.")
-        
+
     schema_file = Path(schema_path)
     if not schema_file.exists():
         raise FileNotFoundError(f"Schema file {schema_path} not found.")
@@ -297,6 +306,7 @@ async def process_document(
     schema_content = schema_file.read_text(encoding="utf-8")
     doc_stem = md_file.stem
     doc_filename = md_file.name
+    ident = identity_stem or doc_stem  # id/output identity (may differ from provenance stem)
 
     # 1. Semantic split
     raw_chunks = _split_markdown_by_headings(doc_content)
@@ -357,14 +367,15 @@ async def process_document(
     embeddings = await _embed_chunks(client, contextual_contents, embed_model)
     
     # 4. Stream to JSONL
-    out_file = OUTPUT_DIR / f"{doc_stem}_processed.jsonl"
+    out_file = OUTPUT_DIR / f"{ident}_processed.jsonl"
     with open(out_file, 'w', encoding="utf-8") as f:
         for i, (chunk, topic, emb, ctx_content) in enumerate(zip(valid_chunks, topics, embeddings, contextual_contents)):
             metadata = base_metadata.copy()
             metadata["topic"] = topic
-            
+            metadata["source_layer"] = source_layer
+
             record = {
-                "chunk_id": f"{doc_stem}_{i}",
+                "chunk_id": f"{ident}_{i}",
                 "content": chunk["content"],
                 "contextual_content": ctx_content,
                 "metadata": metadata,
