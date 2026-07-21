@@ -57,6 +57,10 @@ Output **ONLY** a single valid JSON object (no prose, no markdown fences) in exa
       "title": "GAFTA Contract No. 27",
       "summary": "one-line summary for the index",
       "sources": ["{{DOC_STEM}}"],
+      "provenance": [
+        {"section": "Key terms", "tag": "W"},
+        {"section": "Interpretation", "tag": "I"}
+      ],
       "body": "Full markdown body with [[wikilinks]]. Do NOT include YAML frontmatter — it is generated from the fields above."
     }
   ]
@@ -69,3 +73,8 @@ Rules for the JSON:
 - `body` is the COMPLETE new page body (not a diff) and must NOT contain frontmatter.
 - Include every page you create or change; omit pages you are not touching.
 - Merge `sources` lists when updating an existing page (keep prior stems, add this one).
+- `provenance` classifies each `## section` of the body by how grounded it is:
+  `W` = source-backed (traceable to a cited source), `D` = demo-invented placeholder,
+  `I` = interpretive synthesis. Give one entry per section; **prefer `W`** and never
+  label an unsupported claim `W`. A page whose load-bearing content is mostly `D`/`I`
+  will be flagged by the linter unless it is deliberately signed off.

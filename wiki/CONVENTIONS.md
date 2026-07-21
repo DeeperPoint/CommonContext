@@ -44,6 +44,10 @@ title: GAFTA Contract No. 27
 type: entity
 summary: Standard CIF/C&F contract for Canadian & US grain in bulk, tale quale.
 sources: [27_2025]            # provenance stems (the outputs/<stem>.md this came from)
+provenance:                   # how grounded each section is: W/D/I
+  - {section: Key terms, tag: W}
+  - {section: Interpretation, tag: I}
+status: draft                 # draft | reviewed | signed_off
 updated: 2026-07-07
 ---
 
@@ -64,6 +68,24 @@ Rules:
 - Use `[[wikilink]]` where the link target is the page's path **without** the folder or `.md`
   (e.g. `[[gafta-27]]` for `entities/gafta-27.md`). Create the target page if it doesn't exist yet.
 - Keep claims sourced. When two sources disagree, record **both** and add a `> **Conflict:**` note.
+
+### Provenance & honesty (W/D/I)
+
+Every page declares `provenance` — one entry per `## section`, tagging how grounded it is:
+
+| Tag | Meaning |
+|---|---|
+| `W` | Source-backed — traceable to one of the page's `sources` |
+| `D` | Demo-invented — a placeholder for a demo, not a real fact |
+| `I` | Interpretive — synthesis or bridging beyond what a source states |
+
+**Prefer `W`.** Never tag an unsupported claim `W`. A page whose load-bearing content is
+majority `D`/`I` is **flagged by the linter** unless its frontmatter sets `status: signed_off`
+(a deliberate, curator-acknowledged exception). Upgrading a demo page toward production is simply
+turning `I`/`D` sections into `W` as real sources are ingested.
+
+`source_hashes` is written automatically at ingest (a content hash per source). Do not hand-edit
+it — the linter uses it to detect when a page has gone **stale** relative to a changed source.
 
 ## 4. index.md and log.md
 

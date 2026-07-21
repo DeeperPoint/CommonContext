@@ -31,6 +31,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Reuse the ingest module's helpers so conventions stay in one place.
+import wiki_ingest  # module handle so OUTPUTS_DIR / hashing stay in sync (and are patchable in tests)
 from wiki_ingest import (  # type: ignore
     CONVENTIONS_PATH,
     LOG_PATH,
@@ -86,6 +87,71 @@ def structural_report() -> dict:
         and p.stem not in _exempt
     )
     return {"page_count": len(pages), "orphans": orphans, "broken_links": broken}
+
+
+# ── Provenance honesty gate (no LLM) ─────────────────────────────────────────
+def tag_mix(provenance) -> dict:
+    """Count a page's provenance entries by W/D/I tag."""
+    mix = {"W": 0, "D": 0, "I": 0}
+    for item in provenance or []:
+        if isinstance(item, dict):
+            tag = str(item.get("tag", "")).upper()[:1]
+            if tag in mix:
+                mix[tag] += 1
+    return mix
+
+
+def page_is_honest(fm: dict) -> bool:
+    """A page is honest if signed off, or its provenance is majority source-backed.
+
+    Declaring no provenance at all is not honest — every page must own its tags.
+    """
+    if fm.get("status") == "signed_off":
+        return True
+    prov = fm.get("provenance")
+    if not prov:
+        return False
+    mix = tag_mix(prov)
+    total = mix["W"] + mix["D"] + mix["I"]
+    if total == 0:
+        return False
+    return mix["W"] >= (mix["D"] + mix["I"])
+
+
+def provenance_report() -> dict:
+    """Flag pages missing provenance, or majority demo/interpretive without sign-off."""
+    violations: list[tuple[str, str]] = []
+    checked = 0
+    for p in _iter_pages():
+        fm, _ = parse_frontmatter(p.read_text(encoding="utf-8"))
+        rel = p.relative_to(WIKI_DIR).as_posix()
+        checked += 1
+        if not fm.get("provenance"):
+            violations.append((rel, "no provenance declared (add W/D/I tags)"))
+        elif not page_is_honest(fm):
+            m = tag_mix(fm.get("provenance"))
+            violations.append(
+                (rel, f"majority demo/interpretive without sign-off (W/D/I={m['W']}/{m['D']}/{m['I']})")
+            )
+    return {"checked": checked, "violations": violations}
+
+
+# ── Staleness (deterministic, hash-based) ────────────────────────────────────
+def staleness_report() -> dict:
+    """Flag pages whose recorded source hash no longer matches the live source file."""
+    stale: list[tuple[str, str]] = []
+    missing: list[tuple[str, str]] = []
+    for p in _iter_pages():
+        fm, _ = parse_frontmatter(p.read_text(encoding="utf-8"))
+        rel = p.relative_to(WIKI_DIR).as_posix()
+        for stem, recorded in (fm.get("source_hashes") or {}).items():
+            src = wiki_ingest.OUTPUTS_DIR / f"{stem}.md"
+            current = wiki_ingest._sha256_file(src)
+            if current is None:
+                missing.append((rel, str(stem)))
+            elif current != recorded:
+                stale.append((rel, str(stem)))
+    return {"stale": stale, "missing_source": missing}
 
 
 # ── Editorial checks (LLM) ───────────────────────────────────────────────────
@@ -164,7 +230,7 @@ def emit_signals(findings: list[dict], dsn: str) -> int:
 
 
 # ── Report writing ───────────────────────────────────────────────────────────
-def write_report(struct: dict, editorial: dict, *, today: str) -> None:
+def write_report(struct: dict, prov: dict, stale: dict, editorial: dict, *, today: str) -> None:
     lines = [f"# Wiki Lint Report — {today}", "", "## Structural", ""]
     lines.append(f"- Pages: {struct['page_count']}")
     lines.append(f"- Orphans: {len(struct['orphans'])}")
@@ -173,6 +239,21 @@ def write_report(struct: dict, editorial: dict, *, today: str) -> None:
     lines.append(f"- Broken links: {len(struct['broken_links'])}")
     for src, tgt in struct["broken_links"]:
         lines.append(f"  - {src} → [[{tgt}]]")
+
+    lines += ["", "## Provenance (honesty)", ""]
+    lines.append(f"- Pages checked: {prov['checked']}")
+    lines.append(f"- Violations: {len(prov['violations'])}")
+    for rel, reason in prov["violations"]:
+        lines.append(f"  - {rel}: {reason}")
+
+    lines += ["", "## Staleness", ""]
+    lines.append(f"- Stale pages (source changed since ingest): {len(stale['stale'])}")
+    for rel, stem in stale["stale"]:
+        lines.append(f"  - {rel} ← {stem}")
+    if stale["missing_source"]:
+        lines.append(f"- Missing sources: {len(stale['missing_source'])}")
+        for rel, stem in stale["missing_source"]:
+            lines.append(f"  - {rel} ← {stem} (source file gone)")
 
     findings = editorial.get("findings", [])
     lines += ["", "## Editorial findings", ""]
@@ -194,6 +275,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Health-check the LLM Wiki.")
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--structural", action="store_true", help="Structural checks only (no LLM).")
+    parser.add_argument("--strict", action="store_true",
+                        help="Exit non-zero on broken links, provenance violations, or stale pages (CI gate).")
     parser.add_argument("--emit-signals", action="store_true", help="Emit coverage gaps to the DB.")
     parser.add_argument("--dsn", help="Postgres DSN for gap-signal emission (or POSTGRES_DSN env).")
     args = parser.parse_args(argv)
@@ -203,8 +286,11 @@ def main(argv: list[str] | None = None) -> int:
 
     today = _dt.date.today().isoformat()
     struct = structural_report()
+    prov = provenance_report()
+    stale = staleness_report()
     print(f"[lint] {struct['page_count']} pages | {len(struct['orphans'])} orphan(s) | "
-          f"{len(struct['broken_links'])} broken link(s)")
+          f"{len(struct['broken_links'])} broken link(s) | "
+          f"{len(prov['violations'])} provenance issue(s) | {len(stale['stale'])} stale")
 
     editorial = {"findings": []}
     if not args.structural:
@@ -215,7 +301,7 @@ def main(argv: list[str] | None = None) -> int:
             editorial = editorial_report(struct, model=args.model, key=key)
             print(f"[lint] {len(editorial['findings'])} editorial finding(s)")
 
-    write_report(struct, editorial, today=today)
+    write_report(struct, prov, stale, editorial, today=today)
     print(f"[lint] wrote {REPORT_PATH.relative_to(HERE)}")
 
     if args.emit_signals:
@@ -228,6 +314,11 @@ def main(argv: list[str] | None = None) -> int:
         else:
             n = emit_signals(editorial.get("findings", []), dsn)
             print(f"[lint] emitted {n} gap signal(s) to the DB.")
+
+    if args.strict and (struct["broken_links"] or prov["violations"] or stale["stale"]):
+        print("[lint] FAILED (--strict): fix broken links, provenance, and staleness above.",
+              file=sys.stderr)
+        return 1
     return 0
 
 
