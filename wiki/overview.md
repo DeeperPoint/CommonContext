@@ -3,6 +3,9 @@ title: Overview
 type: overview
 summary: Top-level synthesis of the domain — the evolving thesis, maintained as sources are ingested.
 sources: []
+provenance:
+  - {section: Overview, tag: I}
+status: signed_off
 updated: 2026-07-07
 ---
 

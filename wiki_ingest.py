@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as _dt
+import hashlib
 import json
 import os
 import re
@@ -90,6 +91,56 @@ def parse_frontmatter(text: str) -> tuple[dict, str]:
 def render_page(fields: dict, body: str) -> str:
     fm = yaml.safe_dump(fields, sort_keys=False, allow_unicode=True).strip()
     return f"---\n{fm}\n---\n\n{body.strip()}\n"
+
+
+# ── Provenance & staleness support ───────────────────────────────────────────
+# Provenance tags classify how grounded each part of a page is:
+#   W = source-backed (traceable to an ingested document)
+#   D = demo-invented (a placeholder for a demo, not a real fact)
+#   I = interpretive  (synthesis/bridging beyond what a source states)
+# The tags make the wiki honest: a page leaning D/I without sign-off is flagged
+# by the linter. source_hashes records the content hash of each source at ingest
+# so the linter can detect when a page has drifted from its sources (staleness).
+_PROVENANCE_TAGS = {"W", "D", "I"}
+_STATUSES = {"draft", "reviewed", "signed_off"}
+
+
+def _sha256_file(path: Path) -> str | None:
+    """SHA-256 of a file's bytes, or None if it does not exist."""
+    if not path.exists():
+        return None
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def source_hashes(sources: list) -> dict:
+    """Record the content hash of each source's ``outputs/<stem>.md`` at ingest.
+
+    The linter recomputes these and flags a page as stale when a source file has
+    changed since the page was last written.
+    """
+    out: dict[str, str] = {}
+    for stem in sources or []:
+        h = _sha256_file(OUTPUTS_DIR / f"{stem}.md")
+        if h:
+            out[str(stem)] = h
+    return out
+
+
+def normalize_provenance(raw, *, has_sources: bool) -> list:
+    """Coerce model-supplied provenance into a list of ``{section, tag}`` entries.
+
+    Tags outside W/D/I are dropped. If nothing valid remains, default to a single
+    page-level entry: W when the page cites sources, else I.
+    """
+    out: list[dict] = []
+    for item in raw or []:
+        if isinstance(item, dict):
+            tag = str(item.get("tag", "")).upper()[:1]
+            if tag in _PROVENANCE_TAGS:
+                out.append({"section": str(item.get("section") or "page"), "tag": tag})
+    if not out:
+        out = [{"section": "page", "tag": "W" if has_sources else "I"}]
+    return out
 
 
 def _iter_pages() -> list[Path]:
@@ -221,11 +272,16 @@ def apply_pages(data: dict, *, today: str, dry_run: bool) -> list[str]:
         if not body:
             print(f"  WARN: skipping {page.get('path')} — empty body", file=sys.stderr)
             continue
+        merged_sources = _merge_sources(dest, page.get("sources") or [])
+        status = page.get("status") if page.get("status") in _STATUSES else "draft"
         fields = {
             "title": page.get("title") or dest.stem.replace("-", " ").title(),
             "type": page.get("type") or dest.parent.name.rstrip("s") or "entity",
             "summary": page.get("summary") or "",
-            "sources": _merge_sources(dest, page.get("sources") or []),
+            "sources": merged_sources,
+            "provenance": normalize_provenance(page.get("provenance"), has_sources=bool(merged_sources)),
+            "status": status,
+            "source_hashes": source_hashes(merged_sources),
             "updated": today,
         }
         rel = dest.relative_to(WIKI_DIR).as_posix()
