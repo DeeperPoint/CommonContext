@@ -1,16 +1,40 @@
 <!-- Copyright © 2026 Mustafa Uzumeri. All rights reserved. -->
 
-# AIKnowledgeSlotCuration Roadmap
+# CommonContext Roadmap
 
-> **Purpose:** Curate, structure, and prepare domain knowledge content for ingestion into the Knowledge Slot of a Cosolvent marketplace deployment.
+> **Purpose:** Curate, structure, and prepare domain knowledge for a Cosolvent marketplace deployment — producing both the *domain schema* (→ `marketplace.yaml`) and the *knowledge library* (→ `reference_library`).
+>
+> **Naming:** This project was formerly *KnowledgeSlot* / *AIKnowledgeSlotCuration*; it is now **CommonContext**. The "Knowledge Slot" term below refers to the Cosolvent architectural slot this content populates. Rename tracked in [`docs/ROADMAP-renaming-knowledgeslot-to-commoncontext.md`](docs/ROADMAP-renaming-knowledgeslot-to-commoncontext.md).
 >
 > **Relationship to other projects:**
-> - **Cosolvent** — The Knowledge Slot (§16.2 of its ROADMAP.md) will be implemented here. This project produces the *content* that populates it.
-> - **CosolventAI** — The original roadmap (§21, "Slots Architecture") introduced the Knowledge Slot concept and its detailed design. The earlier codebase used the term "curated industry context" (`industry_context_service`) for a related but less structured concept; "Knowledge Slot" replaced this to emphasise that sponsor-curated reference material is architecturally distinct from participant-supplied documents.
-> - **DPWebsitePublishingSystem** — The whitepaper (`MarketTheoryWP.md`) provides the theoretical foundation in §4.13 (Authoritative Information Availability), §5.13 (Curating and Distributing Authoritative Information), and §6.6 (AI-Curated Authoritative Information).
+> - **Cosolvent** — Consumes both outputs: `configgen` turns the schema into `marketplace.yaml`, and `load-references` ingests the knowledge library into the `reference_library` pgvector table. That table, grounded domain Q&A, and the gap-signal store are now **implemented** on the Cosolvent side (see the Status Update).
+> - **mfgllmwiki** — A source corpus. `wiki_to_provenance.py` maps wiki-page frontmatter into provenance sidecars so wiki pages can be embedded into the library (`wiki_refs.jsonl`).
+> - **Whitepaper** — The theoretical foundation (Authoritative Information Availability; Curating and Distributing Authoritative Information; AI-Curated Authoritative Information). Canonical copy lives in the DeeperPoint wiki/publishing repos.
 >
-> **Date:** 2026-02-20 (original); last updated 2026-03-14
+> **Date:** 2026-02-20 (original); revised 2026-03-14; status-refreshed 2026-07-21
 > **Author:** Mustafa Uzumeri
+
+---
+
+## Status Update — 2026-07-21
+
+This roadmap was written against an early-2026 snapshot (grain/GAFTA vertical, before the KnowledgeSlot→CommonContext rename). Much of Phases 1–3 has since shipped and the primary demo vertical has moved to **machinery/manufacturing**. The accurate operational references are now [`HOW-TO-USE.md`](HOW-TO-USE.md) and the `Makefile`. Highlights:
+
+| Area | Original status | Now |
+|---|---|---|
+| **Ingestion pipeline (Phase 3)** | Planned | ✅ Built — heading-based chunking, LLM topic-tagging against a controlled vocab, 1536-dim embeddings, and a Cosolvent export contract: `chunk_and_embed.py` → `export_references.py`. Design captured in `docs/DECISION-004` (reference-table) and `docs/DECISION-005` (chunking/tagging). |
+| **One-command build** | — | ✅ `build_from_inputs.py` / `make build`: convert `inputs/` → synthesize schema → embed → `generated_refs.jsonl`. Also emits a **domain schema** for Cosolvent `configgen` (a second output beyond the knowledge library). |
+| **Seed / load into Cosolvent** | Planned | ✅ `seed_reference_library.py` (direct pgvector upsert, idempotent) and Cosolvent's `load-references` CLI (`make build-and-load`). |
+| **Cosolvent-side `reference_library` + Q&A + gap store** | 🔲 Not yet implemented | ✅ Implemented in Cosolvent (`reference_library` table, `/api/ai/knowledge` grounded Q&A with citations, `knowledge_gap_signals`). The §6 dependency table below is updated accordingly. |
+| **Gap / pull signals** | Prompt 🔲 | ✅ `gap_signal.py` + `prompts/gap_detection.md` + `migrations/add_gap_signals.sql`; covered by `test_gap_signal.py`. |
+| **Embedding provider** | OpenAI via `llm_client.py` | 🟡 Now `openai/text-embedding-3-small` via **OpenRouter** (single key does LLM + embeddings), with a direct-OpenAI fallback. |
+| **Second vertical** | Grain only | ✅ Cross-vertical proven: **machinery_trade** + **manufacturing** are the active corpora (mfgllmwiki embedded via `wiki_to_provenance.py` → `wiki_refs.jsonl`); grain moved to `inputs_archive_grain/`. `test_cross_vertical.py` runs both. |
+| **Test suite** | — | ✅ 11 test modules incl. a real pgvector integration test (`docker-compose.test.yml`). |
+| **Curation Tool** | GUI (`server.py`) | ✅ Still current; now also launchable in Docker via the `/launch-docker` workflow (port 8400). |
+
+**Still ahead:** broadening the reference corpus (Phase 2), the sponsor-facing curation UX and pull-signal queue (§5 Q5, `docs/DECISION-001`), staleness detection (§2.9, `docs/DECISION-002`), and full cross-collection retrieval testing (Phase 4). Naming cleanup of residual "Knowledge Slot" strings in code/UI is tracked in the rename doc.
+
+Section markers below (✅/🟡) reflect this update; the original phase text is retained for context.
 
 ---
 
@@ -142,7 +166,9 @@ This project curates the **content** side of the Knowledge Slot — the referenc
 
 ### 4.2 — Current Content Inventory
 
-**Grain Trading Vertical (Agricultural Commodity Trade):**
+> **🟡 Vertical pivot (2026-07):** the **active** demo corpus is now **machinery/manufacturing** — `inputs/global_machinery_marketplace_whitepaper.pdf` → `schemas/generated_schema.yaml` + `generated_refs.jsonl`, plus the mfgllmwiki pages → `wiki_refs.jsonl`. The grain corpus below has been retired to `inputs_archive_grain/` and is kept as a proven second vertical (`test_cross_vertical.py`). The grain table is preserved for historical reference.
+
+**Grain Trading Vertical (Agricultural Commodity Trade) — archived:**
 
 | Document                                    | Source         | Status                         | Output                                                  |
 | ------------------------------------------- | -------------- | ------------------------------ | ------------------------------------------------------- |
@@ -197,25 +223,25 @@ This project curates the **content** side of the Knowledge Slot — the referenc
 - [ ] Add government grading standards (Canadian Grain Commission, USDA/FGIS)
 - [ ] Define metadata tag vocabulary for grain trading vertical
 
-### Phase 3 — Ingestion Preparation
+### Phase 3 — Ingestion Preparation ✅ (largely complete)
 
 **Goal:** Prepare content in the format required by the Cosolvent `reference_library` table.
 
-- [ ] Define chunking strategy that preserves clause-level coherence
-- [ ] Tag each document chunk with vertical-specific metadata
-- [ ] Leverage provenance metadata (source URL, source type, document title) from `provenance/` as chunk-level citation data
-- [ ] Generate embeddings for reference document chunks
-- [ ] Create seed data scripts for the `reference_library` table
-- [ ] Write domain Q&A system prompts for grain trading vertical
-- [ ] Define the `reference_metadata_schema` configuration for grain trading
-- [ ] Define database schema for `knowledge_gap_signals`
+- [x] Define chunking strategy that preserves clause-level coherence (`chunk_and_embed.py`; `docs/DECISION-005`)
+- [x] Tag each document chunk with vertical-specific metadata (LLM topic-tagging vs `reference_metadata_schema.py` vocab)
+- [x] Leverage provenance metadata (source URL, source type, document title) from `provenance/` as chunk-level citation data
+- [x] Generate embeddings for reference document chunks (1536-dim `text-embedding-3-small` via OpenRouter)
+- [x] Create seed data scripts for the `reference_library` table (`seed_reference_library.py`; Cosolvent `load-references`; `export_references.py` adapter)
+- [x] Write domain Q&A system prompts (`prompts/qa_system.md`, `prompts/qa_system_manufacturing.md`)
+- [x] Define the `reference_metadata_schema` configuration (grain **and** manufacturing; `reference_metadata_schema.py`)
+- [x] Define database schema for `knowledge_gap_signals` (`migrations/add_gap_signals.sql`)
 
-### Phase 4 — Integration Testing
+### Phase 4 — Integration Testing 🟡 (in progress)
 
 **Goal:** Validate that curated content works correctly when loaded into a Cosolvent instance.
 
-- [ ] Load curated content into a Cosolvent test instance
-- [ ] Verify metadata-filtered vector search returns relevant results
+- [x] Load curated content into a Cosolvent test instance (real pgvector seed via `test_db_integration.py` + `docker-compose.test.yml`)
+- [x] Verify metadata-filtered vector search returns relevant results (covered by the integration test)
 - [ ] Test domain Q&A with grain trading questions
 - [ ] Verify user-context scoping (e.g., a buyer in Japan gets Japan-relevant regulations)
 - [ ] Test cross-collection retrieval (reference library + participant data)
@@ -237,10 +263,11 @@ This project curates the **content** side of the Knowledge Slot — the referenc
 
 | Dependency                         | Project        | Status                        | Impact                                           |
 | ---------------------------------- | -------------- | ----------------------------- | ------------------------------------------------ |
-| `reference_library` table schema   | Cosolvent | 🔲 Not yet implemented (§16.2) | Phase 3 ingestion format depends on this         |
-| `reference_metadata_schema` config | Cosolvent | 🔲 Not yet implemented (§16.2) | Phase 3 metadata tagging depends on this         |
-| Domain Q&A chat mode               | Cosolvent | 🔲 Not yet implemented (§16.2) | Phase 4 testing depends on this                  |
-| Embedding model choice             | Cosolvent | ✅ OpenAI via `llm_client.py`  | Phase 3 embeddings must match this model         |
+| `reference_library` table schema   | Cosolvent | ✅ Implemented (§16.2)          | Ingestion contract now targets the live table    |
+| `reference_metadata_schema` config | Cosolvent | 🟡 Metadata-filtered retrieval works; per-vertical tag vocab lives here (`reference_metadata_schema.py`) | Phase 3 metadata tagging done on this side |
+| Domain Q&A chat mode               | Cosolvent | ✅ Implemented — `/api/ai/knowledge` grounded Q&A with citations | Phase 4 testing unblocked |
+| Embedding model choice             | Cosolvent | ✅ `text-embedding-3-small` (1536) — matched on both sides | Embeddings match; do not diverge the model |
+| Knowledge gap signals              | Cosolvent | ✅ `knowledge_gap_signals` table + admin `/gaps` | Enables the pull-signal loop (§2.8) |
 | Composable retrieval interface     | Cosolvent | 🔲 Not yet implemented         | Phase 4 cross-collection testing depends on this |
 
 ---
