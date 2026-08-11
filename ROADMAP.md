@@ -4,7 +4,7 @@
 
 > **Purpose:** Curate, structure, and prepare domain knowledge for a Cosolvent marketplace deployment — producing both the *domain schema* (→ `marketplace.yaml`) and the *knowledge library* (→ `reference_library`).
 >
-> **Naming:** This project was formerly *KnowledgeSlot* / *AIKnowledgeSlotCuration*; it is now **CommonContext**. The "Knowledge Slot" term below refers to the Cosolvent architectural slot this content populates. Rename tracked in [`docs/ROADMAP-renaming-knowledgeslot-to-commoncontext.md`](docs/ROADMAP-renaming-knowledgeslot-to-commoncontext.md).
+> **Naming:** This project was formerly *CommonContext* / *CommonContext*; it is now **CommonContext**. The "Knowledge Slot" term below refers to the Cosolvent architectural slot this content populates. Rename tracked in [`docs/ROADMAP-renaming-commoncontext-to-commoncontext.md`](docs/ROADMAP-renaming-commoncontext-to-commoncontext.md).
 >
 > **Relationship to other projects:**
 > - **Cosolvent** — Consumes both outputs: `configgen` turns the schema into `marketplace.yaml`, and `load-references` ingests the knowledge library into the `reference_library` pgvector table. That table, grounded domain Q&A, and the gap-signal store are now **implemented** on the Cosolvent side (see the Status Update).
@@ -18,7 +18,7 @@
 
 ## Status Update — 2026-07-21
 
-This roadmap was written against an early-2026 snapshot (grain/GAFTA vertical, before the KnowledgeSlot→CommonContext rename). Much of Phases 1–3 has since shipped and the primary demo vertical has moved to **machinery/manufacturing**. The accurate operational references are now [`HOW-TO-USE.md`](HOW-TO-USE.md) and the `Makefile`. Highlights:
+This roadmap was written against an early-2026 snapshot (grain/GAFTA vertical, before the CommonContext→CommonContext rename). Much of Phases 1–3 has since shipped and the primary demo vertical has moved to **machinery/manufacturing**. The accurate operational references are now [`HOW-TO-USE.md`](HOW-TO-USE.md) and the `Makefile`. Highlights:
 
 | Area | Original status | Now |
 |---|---|---|
@@ -59,7 +59,7 @@ The concept has evolved through several iterations:
 | **Early CosolventAI**      | "Industry Context"                   | `industry_context_service` in CosolventAI codebase | General RAG over ingested documents — no separation between participant docs and reference docs                      |
 | **CosolventAI Roadmap**    | "Knowledge Slot"                     | §21 (Slots Architecture)                           | Architecturally distinct store for sponsor-curated, domain-authoritative reference material                          |
 | **Cosolvent Roadmap** | "Knowledge Slot (Reference Library)" | §16.2                                              | Implementation specification: `reference_library` table, metadata-filtered vector search, document curation workflow |
-| **This project**           | "Knowledge Slot Curation"            | AIKnowledgeSlotCuration repo                       | The process and tooling for preparing content to populate the Knowledge Slot                                         |
+| **This project**           | "Knowledge Slot Curation"            | CommonContext repo                       | The process and tooling for preparing content to populate the Knowledge Slot                                         |
 
 The key architectural distinction: **participant documents** (Context Slot) follow the three-layer privacy model and are self-service. **Reference documents** (Knowledge Slot) are sponsor-curated, progressively built, and authoritative. The two never mix in retrieval.
 
@@ -122,7 +122,7 @@ The Knowledge Slot's chat behaviour is configured via `system_prompts`: the vert
 
 The reference library is progressively built not just through proactive ingestion, but actively guided by user queries that fall outside the current envelope. When a user asks a question the Knowledge Slot cannot answer, the system gracefully falls back (e.g., to external synthesis) and simultaneously fires a "Curatorial Pull Signal" to the sponsor dashboard. This highlights specific, high-value knowledge gaps obstructing potential transactions, directing the sponsor's curation efforts exactly where they are needed most.
 
-> **Design details:** See `docs/DECISION-001-pull-signal-transport.md` for the open decision on how signals flow between Cosolvent and KnowledgeSlot.
+> **Design details:** See `docs/DECISION-001-pull-signal-transport.md` for the open decision on how signals flow between Cosolvent and CommonContext.
 
 ### 2.9 — Staleness Detection
 

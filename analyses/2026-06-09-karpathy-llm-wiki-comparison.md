@@ -17,7 +17,7 @@ Both frameworks reject the standard industry practice of query-time RAG (running
 Instead, both architectures compile raw inputs *incrementally* at ingestion time into a **persistent, compounding knowledge base (a domain wiki)**. In this design, links, summaries, entities, and contradictions are compiled and maintained by the LLM once, and then queried repeatedly.
 
 *   [mfgllmwiki README.md](file:///c:/Users/MustafaUzumeri/GitHub/mfgllmwiki/README.md) represents a direct implementation of Karpathy's "LLM Wiki" concept: an LLM-maintained folder of interlinked Markdown pages (`concepts`, `entities`, `sources`, `stories`) equipped with automated ingestion, semantic linting, and git version tracking.
-*   [CommonContext](file:///c:/Users/MustafaUzumeri/GitHub/KnowledgeSlot/docs/DECISION-000-architecture-and-integration.md) (formerly `KnowledgeSlot`) is the platform-level integration layer. It maps this compounding Markdown wiki into SQL tables (`reference_documents` and `reference_chunks` with JSONB schemas) to ground transactional prompts and queries inside the `Cosolvent` marketplace runtime.
+*   [CommonContext](file:///c:/Users/MustafaUzumeri/GitHub/CommonContext/docs/DECISION-000-architecture-and-integration.md) (formerly `CommonContext`) is the platform-level integration layer. It maps this compounding Markdown wiki into SQL tables (`reference_documents` and `reference_chunks` with JSONB schemas) to ground transactional prompts and queries inside the `Cosolvent` marketplace runtime.
 
 ---
 
@@ -38,9 +38,9 @@ Instead, both architectures compile raw inputs *incrementally* at ingestion time
 Because `CommonContext` is designed to power a live B2B marketplace platform (`Cosolvent`), it introduces several elements that go beyond Karpathy's personal/desktop workspace model:
 
 1.  **Dual-Table SQL Grounding:** 
-    While Karpathy's pattern is designed to run in Obsidian or flat directories, `CommonContext` maps files into two database tables—`reference_documents` (metadata) and `reference_chunks` (embeddings)—to support low-latency SQL filtering and hybrid RAG searches at scale (see [DECISION-004-reference-table-design.md](file:///c:/Users/MustafaUzumeri/GitHub/KnowledgeSlot/docs/DECISION-004-reference-table-design.md)).
+    While Karpathy's pattern is designed to run in Obsidian or flat directories, `CommonContext` maps files into two database tables—`reference_documents` (metadata) and `reference_chunks` (embeddings)—to support low-latency SQL filtering and hybrid RAG searches at scale (see [DECISION-004-reference-table-design.md](file:///c:/Users/MustafaUzumeri/GitHub/CommonContext/docs/DECISION-004-reference-table-design.md)).
 2.  **Demand-Driven Curation (The Pull System):** 
-    `CommonContext` closes the loop between live transactions and offline curation. When a query fails to match verified references, it serves an "unverified fallback" to the user and logs a signal to `knowledge_gap_signals`. This informs the curator of missing domain knowledge that has immediate business value (see [DECISION-001-pull-signal-transport.md](file:///c:/Users/MustafaUzumeri/GitHub/KnowledgeSlot/docs/DECISION-001-pull-signal-transport.md)).
+    `CommonContext` closes the loop between live transactions and offline curation. When a query fails to match verified references, it serves an "unverified fallback" to the user and logs a signal to `knowledge_gap_signals`. This informs the curator of missing domain knowledge that has immediate business value (see [DECISION-001-pull-signal-transport.md](file:///c:/Users/MustafaUzumeri/GitHub/CommonContext/docs/DECISION-001-pull-signal-transport.md)).
 3.  **Configurable, Document-Type-Specific Chunking:** 
     Rather than generic character chunking, `CommonContext` uses the YAML domain schema to parse files by actual clause boundaries (e.g. GAFTA contract clauses or ASTM specification tables) for exact citation.
 

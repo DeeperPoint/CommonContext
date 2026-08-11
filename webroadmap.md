@@ -1,6 +1,6 @@
 <!-- Copyright © 2026 Mustafa Uzumeri. All rights reserved. -->
 
-# KnowledgeSlot Roadmap
+# CommonContext Roadmap
 
 > **Purpose:** Curate, structure, and prepare domain knowledge content for ingestion into the Knowledge Slot of a Cosolvent marketplace deployment.
 >
@@ -195,7 +195,7 @@ Additional documents have been identified for future ingestion, including supple
 
 The Knowledge Slot operationalises several concepts from the DeeperPoint thin market framework:
 
-| Concept | Challenge | How KnowledgeSlot Addresses It |
+| Concept | Challenge | How CommonContext Addresses It |
 | --- | --- | --- |
 | **Authoritative Information Availability** | Fragmented, hard-to-find reference material thins markets | Centralises authoritative documents in a searchable, AI-accessible library |
 | **Curating & Distributing Authoritative Information** | Reference library creation, contextual delivery, cross-reference mapping | Curation workflow + metadata-filtered retrieval + user-context scoping |

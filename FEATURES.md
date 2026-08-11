@@ -1,6 +1,6 @@
 <!--Copyright (c) 2026 Mustafa Uzumeri. All rights reserved.-->
 
-# KnowledgeSlot — Product Feature Sheet
+# CommonContext — Product Feature Sheet
 
 > **AI-powered curation tooling for building sponsor-managed reference libraries in Cosolvent marketplace deployments.**
 
@@ -132,7 +132,7 @@
 
 ## Scope Boundaries
 
-KnowledgeSlot is the **content preparation and curation tooling** for a Cosolvent marketplace's reference library. It does not:
+CommonContext is the **content preparation and curation tooling** for a Cosolvent marketplace's reference library. It does not:
 
 - **Host the reference library at runtime** — that is Cosolvent's `reference_library` table (§16.2)
 - **Serve domain Q&A** — that is Cosolvent's chatbot in "domain knowledge" mode

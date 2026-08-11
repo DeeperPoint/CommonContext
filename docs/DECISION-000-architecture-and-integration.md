@@ -8,7 +8,7 @@
 > **Participants:** Mustafa Uzumeri, Antigravity Agent
 >
 > **Successor documents:**
-> - `DECISION-001-pull-signal-transport.md` — How gap signals flow between Cosolvent and KnowledgeSlot (supersedes parts of §9 Q6)
+> - `DECISION-001-pull-signal-transport.md` — How gap signals flow between Cosolvent and CommonContext (supersedes parts of §9 Q6)
 > - `DECISION-002-staleness-detection.md` — Periodic scanning for stale reference material (addresses ROADMAP Open Question 6)
 > - `DECISION-003-facilitator-subtypes.md` — Facilitator subtype strategy (extracted from §3 / §9 Q3)
 > - `DECISION-004-reference-table-design.md` — Two-table design and gap signals schema (extracted from §4 / §9 Q4)
@@ -94,7 +94,7 @@ The grain trade schema is the first concrete deliverable for **Cosolvent ROADMAP
 ### Current Position
 
 ```
-AIKnowledgeSlotCuration                 Cosolvent
+CommonContext                 Cosolvent
 ═══════════════════════                 ══════════════
 Phase 1 — Foundation ✅                  Phase 0 — Hygiene
   • PDF/URL conversion tools              Phase 1 — Three-Layer + Deals
@@ -207,7 +207,7 @@ The keys and allowed values would be defined by a `reference_metadata_schema` co
 
 ### Cross-Slot Architectural Guardrails
 
-Three constraints (from AIKnowledgeSlotCuration ROADMAP §3):
+Three constraints (from CommonContext ROADMAP §3):
 
 1. **Same embedding model and dimensions** — `reference_chunks` must use `text-embedding-3-small` (1536 dims), matching `ai_document_chunks` and `profile_vectors`. Conflict C4 (embedding model lock-in) applies.
 
@@ -469,7 +469,7 @@ How currently converted documents would map to `reference_documents` rows:
    > ⏳ **Still pending.** The analysis in §5 above remains valid. No formal decision recorded.
 
 6. **Seed data loading** — The vertical project needs a way to load Knowledge Slot content (B1) into a Cosolvent instance. Should this be a CLI command, a startup hook, or an admin API endpoint?
-   > 🔀 **Partially superseded by `DECISION-001-pull-signal-transport.md`**, which addresses the broader question of how KnowledgeSlot and Cosolvent exchange data at runtime. The seed loading mechanism is a subset of that transport decision.
+   > 🔀 **Partially superseded by `DECISION-001-pull-signal-transport.md`**, which addresses the broader question of how CommonContext and Cosolvent exchange data at runtime. The seed loading mechanism is a subset of that transport decision.
 
 ### Vocabulary & Integration
 

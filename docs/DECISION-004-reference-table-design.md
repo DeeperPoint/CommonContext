@@ -106,13 +106,13 @@ A JSONB column accommodates this without schema changes per vertical. The allowe
 
 ### 4.1 — Where Does `knowledge_gap_signals` Live?
 
-This table is populated by Cosolvent (runtime) and consumed by KnowledgeSlot (curation tool). Its physical location depends on the transport decision in **DECISION-001**:
+This table is populated by Cosolvent (runtime) and consumed by CommonContext (curation tool). Its physical location depends on the transport decision in **DECISION-001**:
 
 | DECISION-001 Outcome | `knowledge_gap_signals` Location |
 |----------------------|----------------------------------|
-| Option A (shared database) | Cosolvent's PostgreSQL, read by KnowledgeSlot |
-| Option B (API) | KnowledgeSlot's own store, populated via API from Cosolvent |
-| Option C (file-based) | Exported as JSON from Cosolvent, imported by KnowledgeSlot |
+| Option A (shared database) | Cosolvent's PostgreSQL, read by CommonContext |
+| Option B (API) | CommonContext's own store, populated via API from Cosolvent |
+| Option C (file-based) | Exported as JSON from Cosolvent, imported by CommonContext |
 
 This decision should be made after DECISION-001 is resolved.
 

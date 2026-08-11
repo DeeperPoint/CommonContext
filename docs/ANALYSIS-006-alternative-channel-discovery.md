@@ -28,7 +28,7 @@ This report reviews the workarounds depicted in the *Recapturing Shadow Manufact
 3. [Systematic Manual Methodology (The Curation Protocol)](#3-systematic-manual-methodology-the-curation-protocol)
 4. [Automated Discovery Pipeline (AP-ACD)](#4-automated-discovery-pipeline-ap-acd)
 5. [Integrating Alternative Channels into the Knowledge Slot Schema](#5-integrating-alternative-channels-into-the-knowledge-slot-schema)
-6. [Implementation Action Plan for KnowledgeSlot](#6-implementation-action-plan-for-knowledgeslot)
+6. [Implementation Action Plan for CommonContext](#6-implementation-action-plan-for-commoncontext)
 
 ---
 
@@ -175,7 +175,7 @@ An automated agent generates search parameters targeting known standards and com
 ```
 
 ### Step 2: Ingestion & Conversion (Existing Infrastructure)
-The pipeline leverages the `KnowledgeSlot` repository's existing utilities:
+The pipeline leverages the `CommonContext` repository's existing utilities:
 - `convert_url.py` — Fetches target advisory web pages and renders them as Markdown.
 - `convert_pdf.py` — Rapidly parses regulatory PDF bulletins into clean, structure-aware Markdown while retaining clause numbering.
 
@@ -311,9 +311,9 @@ alternative_compliance_rules:
 
 ---
 
-## 6. Implementation Action Plan for KnowledgeSlot
+## 6. Implementation Action Plan for CommonContext
 
-To deploy this capability into the `AIKnowledgeSlotCuration` system, the following roadmap is proposed:
+To deploy this capability into the `CommonContext` system, the following roadmap is proposed:
 
 ```
   ┌────────────────────────────────────────────────────────────┐

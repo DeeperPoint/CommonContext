@@ -7,7 +7,7 @@ CommonContext is the **content/curation companion** to the [Cosolvent](https://g
 
 Both are derived from the **same** curated documents — read once for structure, once for content. The tool is **vertical-agnostic**: the active demo targets machinery/manufacturing trade, and the same pipeline has been validated against a grain-trade corpus (now archived in `inputs_archive_grain/`).
 
-> **Naming note:** this project was formerly *KnowledgeSlot* / *AIKnowledgeSlotCuration*. It has been renamed **CommonContext**. Some code and GUI strings still read "Knowledge Slot Curation Tool" — that rename is tracked in [`docs/ROADMAP-renaming-knowledgeslot-to-commoncontext.md`](docs/ROADMAP-renaming-knowledgeslot-to-commoncontext.md).
+> **Naming note:** this project was formerly *CommonContext* / *CommonContext*. It has been renamed **CommonContext**. Some code and GUI strings still read "Knowledge Slot Curation Tool" — that rename is tracked in [`docs/ROADMAP-renaming-commoncontext-to-commoncontext.md`](docs/ROADMAP-renaming-commoncontext-to-commoncontext.md).
 
 ## How it fits with Cosolvent
 

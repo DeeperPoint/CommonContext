@@ -1,10 +1,10 @@
 ---
-description: Clean up, build, and start the KnowledgeSlot curation tool using Docker, then display local access URLs
+description: Clean up, build, and start the CommonContext curation tool using Docker, then display local access URLs
 ---
 
 <!--Copyright (c) 2026 Mustafa Uzumeri. All rights reserved.-->
 
-## /launch-docker — Launch the KnowledgeSlot Curation Tool with Docker
+## /launch-docker — Launch the CommonContext Curation Tool with Docker
 
 Use this workflow to clean up any existing containers, build the curation server Docker image, start the container in detached mode, and verify that the GUI is accessible.
 
@@ -23,7 +23,7 @@ In chat, type:
 2. Discover and locate the `OPENROUTER_API_KEY`:
    - Check the local `.env` file first.
    - If not present locally, check sibling repository `.env` files (e.g. `c:\Users\MustafaUzumeri\Documents\GitHub\DPContentPublishing\.env`).
-   - If found, create or update a local `.env` file in the root of the `KnowledgeSlot` repository to ensure the API key is passed into the Docker environment.
+   - If found, create or update a local `.env` file in the root of the `CommonContext` repository to ensure the API key is passed into the Docker environment.
 
 #### Step 2 — Clean up existing containers
 1. Stop and remove any active or dangling containers and networks defined in `docker-compose.yml` to prevent name clashes:

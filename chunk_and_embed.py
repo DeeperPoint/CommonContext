@@ -3,7 +3,7 @@
 """
 Chunking & Tagging Pipeline
 
-Processes KnowledgeSlot Markdown into semantically coherent, tagged, and embedded
+Processes CommonContext Markdown into semantically coherent, tagged, and embedded
 chunks. Implements contextual chunking (prepending heading lineage to resolve
 "lost in the middle" relevance issues) and streams to `.jsonl` for consumption
 by downstream Cosolvent vector stores.

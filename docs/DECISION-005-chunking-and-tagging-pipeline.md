@@ -1,7 +1,7 @@
 # DECISION-005: Clause-level Chunking & Tagging Pipeline
 
 ## 1. Context and Problem Statement
-KnowledgeSlot acts as the content producer for Cosolvent's match engine. Currently, KnowledgeSlot converts raw documents (PDF, URL, CSV) into Markdown. However, raw Markdown is not searchable or commercially groundable in a vector database as-is. 
+CommonContext acts as the content producer for Cosolvent's match engine. Currently, CommonContext converts raw documents (PDF, URL, CSV) into Markdown. However, raw Markdown is not searchable or commercially groundable in a vector database as-is. 
 
 To bridge this gap, we require a pipeline that processes this Markdown into semantically coherent, metadata-tagged, and embedded JSON datasets ready for ingestion into Cosolvent's `reference_library` table (pgvector). 
 
@@ -60,7 +60,7 @@ flowchart TD
 
 ### 3.4 Concurrency & Resiliency
 * **Decision:** Utilizes `asyncio.Semaphore` and the `tenacity` library.
-* **Why:** Tagging every clause in a 50-page contract requires a high volume of requests to OpenRouter/OpenAI. Instead of deploying a heavy queue-broker like Celery, built-in asynchronous batching with exponential backoff elegantly prevents `429 Too Many Requests` API failures while keeping KnowledgeSlot fully self-contained.
+* **Why:** Tagging every clause in a 50-page contract requires a high volume of requests to OpenRouter/OpenAI. Instead of deploying a heavy queue-broker like Celery, built-in asynchronous batching with exponential backoff elegantly prevents `429 Too Many Requests` API failures while keeping CommonContext fully self-contained.
 
 ## 4. Output Data Structure
 The resulting `.jsonl` lines will match this schema precisely, ready for pgvector insertion:

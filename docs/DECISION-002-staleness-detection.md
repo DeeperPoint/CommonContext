@@ -137,7 +137,7 @@ A new `staleness_alerts` store (JSON file per workspace, or table if database-ba
 
 ### 4.1 — Scope
 
-This is entirely a KnowledgeSlot curation tool feature. It does not affect the Cosolvent runtime. The live marketplace serves whatever is in the `reference_library` table; the staleness scanner operates offline on the curation workspace.
+This is entirely a CommonContext curation tool feature. It does not affect the Cosolvent runtime. The live marketplace serves whatever is in the `reference_library` table; the staleness scanner operates offline on the curation workspace.
 
 ### 4.2 — LLM Cost
 

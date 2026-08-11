@@ -2,7 +2,7 @@
 
 # Alternative Compliance & Exemption Extraction Prompt
 
-> **Purpose:** This prompt template is used by the `KnowledgeSlot` automated discovery pipeline 
+> **Purpose:** This prompt template is used by the `CommonContext` automated discovery pipeline 
 > to analyze regulatory bulletins, standards amendments, and guidelines, and extract 
 > alternative compliance channels, exemptions, role-delegated witnessing, or risk-tiered scope reductions.
 >
