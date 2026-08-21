@@ -2,208 +2,278 @@
 # Hand edits will be overwritten on the next build.
 
 schema_version: '1.0'
-vertical: machinery_trade
-domain: industrial_commercial_machinery
-source_authority: Global Machinery Marketplace Platform
-goods:
-  description: 'Industrial and commercial machinery listed for sale across borders.
+vertical: cnc_machining_capacity
+domain: precision_machining
+source_authority: Government of Canada Job Bank / SAE / ISO (compiled reference corpus)
+governing_law: Ontario, Canada
+capacity:
+  description: 'The machining capacity (machine-time and capability) that a shop offers or a buyer needs.
 
     '
   fields:
     machine_type:
       type: enum
-      description: Category of machinery being traded
+      description: Class of CNC machine offered or required for the work.
       allowed_values:
-      - construction
-      - agricultural
-      - mining
-      - manufacturing
-      - material_handling
-      - fleet_vehicle
-      - industrial_general
-      - commercial_equipment
+      - vertical_machining_center
+      - cnc_lathe
+      - 3_axis_mill
+      - 4_axis_mill
+      - 5_axis_machining_center
+      - multiaxis_machining_center
+      - laser_cutting
+      - waterjet_cutting
       required: true
-    condition:
+    tool_taper:
       type: enum
-      description: Operating condition of the machine
+      description: Spindle tool interface standard of the machine.
       allowed_values:
-      - new
-      - like_new
-      - used
-      - refurbished
-      - for_parts
-      required: true
-    age_years:
-      type: number
-      description: Age of the machine in years
+      - CT40
+      - BT40
+      - BIG-PLUS_No.40
+      - BIG-PLUS_No.50
       required: false
-    operating_hours:
-      type: number
-      description: Total recorded operating hours
-      required: false
-    region:
-      type: enum
-      description: Geographic region where the machine is located
-      allowed_values:
-      - north_america
-      - south_america
-      - europe
-      - africa
-      - middle_east
-      - asia
-      - oceania
-      required: true
-    availability:
-      type: enum
-      description: Current availability status of the listing
-      allowed_values:
-      - available
-      - reserved
-      - in_negotiation
-      - sold
-      - pending_delivery
-      required: true
-    certifications:
+    max_work_envelope_mm:
       type: string
-      description: Certifications and compliance documents attached to the listing
+      description: Maximum X/Y/Z work envelope (or Ø×H for rotary) the machine can accommodate, in millimetres.
       required: false
-    maintenance_history:
+    max_spindle_speed_rpm:
+      type: number
+      description: Maximum spindle speed in revolutions per minute.
+      required: false
+    table_load_limit_kg:
+      type: number
+      description: Maximum workpiece/table load the machine supports, in kilograms.
+      required: false
+    rigid_tapping:
       type: boolean
-      description: Whether maintenance history records are attached
+      description: Whether the machine supports rigid tapping.
+      required: false
+    deal_instrument:
+      type: enum
+      description: How the capacity is transacted.
+      allowed_values:
+      - spot_purchase
+      - capacity_rental
+      - ongoing_subcontract
+      required: true
+    availability_window:
+      type: string
+      description: Time window in which the capacity is available (e.g. 'second shift, 8 weeks').
+      required: false
+material:
+  description: 'The workpiece material and process requirements for the machining job.
+
+    '
+  fields:
+    material_grade:
+      type: enum
+      description: Primary workpiece material to be machined.
+      allowed_values:
+      - aluminum_7075_t6
+      - aluminum_6061
+      - ti_6al_4v
+      - inconel_625
+      - inconel_718
+      - stainless_steel
+      - carbon_steel
+      - plastic
+      required: true
+    material_family:
+      type: enum
+      description: Broad material class informing tooling and machine rigidity needs.
+      allowed_values:
+      - aluminum_alloy
+      - titanium_alloy
+      - nickel_superalloy
+      - steel
+      - non_ferrous
+      - polymer
+      required: false
+    required_processes:
+      type: enum
+      description: Secondary processes required beyond milling/turning.
+      allowed_values:
+      - heat_treatment
+      - coating
+      - edm
+      - threadmilling
+      - inspection_cmm
+      - deburring
+      required: false
+    end_use_sector:
+      type: enum
+      description: Industry the finished part serves.
+      allowed_values:
+      - aerospace
+      - defense
+      - automotive
+      - medical
+      - power_generation
+      - marine
+      - general_industrial
       required: false
 quality:
-  description: 'Trust and verification attributes that establish machine and seller credibility.
+  description: 'Quality-system certifications and acceptance criteria governing the work.
 
     '
   fields:
-    seller_verification:
+    quality_certification:
       type: enum
-      description: Verification status of the selling party
+      description: Quality management system the shop maintains.
       allowed_values:
-      - unverified
-      - email_verified
-      - document_verified
-      - fully_verified
-      required: true
-    inspection_report:
-      type: boolean
-      description: Whether an independent inspection report is available
-      required: false
-    machine_identity_record:
-      type: boolean
-      description: Whether a unique machine identity record exists
-      required: false
-    verification_badge:
-      type: enum
-      description: Trust badge awarded based on platform history
-      allowed_values:
+      - iso_9001
+      - as9100d
+      - as9110
+      - as9120
       - none
-      - bronze
-      - silver
-      - gold
-      - enterprise
+      required: true
+    tolerance_class:
+      type: enum
+      description: Dimensional tolerance capability required or offered.
+      allowed_values:
+      - general
+      - tight_precision
+      - first_article_inspection
+      - statistical_sampling
       required: false
-finance:
-  description: 'Commercial and payment terms governing a machinery transaction.
+    inspection_method:
+      type: enum
+      description: Method used to determine part acceptance.
+      allowed_values:
+      - cmm_report
+      - first_article_inspection
+      - statistical_sampling_plan
+      - visual
+      required: false
+    counterfeit_parts_control:
+      type: boolean
+      description: Whether counterfeit-parts prevention controls (AS9100D) are in place.
+      required: false
+commercial:
+  description: 'Pricing, payment, and contract-instrument terms for the transaction.
 
     '
   fields:
+    rate_structure:
+      type: enum
+      description: Basis on which the work is priced.
+      allowed_values:
+      - per_part
+      - per_machine_hour
+      - fixed_price
+      required: true
+    payment_terms:
+      type: enum
+      description: Invoice payment terms.
+      allowed_values:
+      - net_30
+      - net_45
+      - net_60
+      - on_delivery
+      required: false
     currency:
       type: enum
-      description: Settlement currency for the transaction
+      description: Transaction currency.
       allowed_values:
-      - USD
-      - EUR
-      - GBP
-      - JPY
-      - CNY
-      - AUD
       - CAD
-      required: true
-    payment_method:
+      - USD
+      required: false
+    contract_stage:
       type: enum
-      description: Mechanism used to settle the deal
+      description: Disclosure/contract stage the deal has reached.
       allowed_values:
-      - escrow
-      - bank_transfer
-      - financing
-      - trade_credit
-      - letter_of_credit
-      required: true
-    financing_available:
+      - anonymous
+      - mutual_nda
+      - deal_context
+      - subcontract_agreement
+      required: false
+    invoice_factoring:
       type: boolean
-      description: Whether financing proposals are offered for the listing
+      description: Whether the seller intends to factor the resulting invoice for early cash.
       required: false
-    deal_stage:
-      type: enum
-      description: Current stage in the deal lifecycle
-      allowed_values:
-      - discovery
-      - qualification
-      - communication
-      - negotiation
-      - agreement
-      - escrow
-      - logistics
-      - delivery
-      - completion
-      required: false
-logistics:
-  description: 'Cross-border movement and delivery attributes for traded machinery.
+region:
+  description: 'Geographic location and logistics attributes of the party.
 
     '
   fields:
-    customs_handling:
-      type: boolean
-      description: Whether customs and import/export handling is required
-      required: false
-    delivery_terms:
+    economic_region:
       type: enum
-      description: Agreed delivery and shipping terms
+      description: Ontario economic region where the shop or buyer is located.
       allowed_values:
-      - ex_works
-      - fob
-      - cif
-      - dap
-      - ddp
-      - buyer_arranged
+      - toronto
+      - kitchener_waterloo_barrie
+      - windsor_sarnia
+      - hamilton_niagara
+      - london
+      - ottawa
+      - stratford_bruce
       required: false
-    cross_border:
+    rigging_required:
       type: boolean
-      description: Whether the transaction crosses international borders
+      description: Whether heavy rigging/transport is needed to move material or equipment.
       required: false
 participant_roles:
-  description: 'Maps machinery trade parties to marketplace role kinds.
+  description: 'Maps the parties in a CNC capacity-exchange deal to marketplace role kinds.
 
     '
   supply:
-    label: Seller
-    description: 'Manufacturers, resellers, and fleet owners publishing machinery inventory with specifications,
-      certifications, and maintenance history.
+    label: Machine Shop
+    description: 'A CNC machining business offering idle machine-time or subcontract manufacturing capacity
+      (e.g. a shop with spare second-shift hours on a VF-2-class or 5-axis machine).
 
       '
   demand:
     label: Buyer
-    description: 'Construction companies, agricultural operators, mining firms, and independent buyers
-      sourcing machinery through structured search and negotiation.
+    description: 'An OEM, contractor, or manufacturer needing parts machined or machine capacity rented
+      — often exporting finished parts, frequently to the US.
 
       '
   facilitator:
-    label: Service Provider
-    description: 'Intermediaries who enable discovery, trust, financing, and delivery of deals.
+    label: Deal Facilitator
+    description: 'Third-party service providers whose sign-off or service gates completion of a capacity-exchange
+      deal.
 
       '
     subtypes:
-    - role: broker
-      description: Intermediary who connects buyers and sellers and facilitates negotiation.
-    - role: inspection_service
-      description: Provides independent inspection reports verifying machine condition.
-    - role: financing_provider
-      description: Offers financing proposals and trade financing for transactions.
-    - role: logistics_provider
-      description: Handles shipping, customs, and cross-border delivery of machinery.
-    - role: escrow_agent
-      description: Holds funds securely until deal completion and delivery.
+    - role: quality_inspector
+      description: Performs first-article/CMM inspection to certify part acceptance.
+    - role: rigging_logistics_provider
+      description: Rigs, transports, and installs heavy machinery or ships material/output.
+    - role: cargo_insurer
+      description: Underwrites cargo/equipment-in-transit and marine insurance for shipped goods.
+    - role: trade_finance_provider
+      description: Factors the shop's invoice, advancing cash against accounts receivable.
+    - role: certification_body
+      description: Third-party auditor certifying ISO 9001 / AS9100D quality systems.
 referenced_standards:
-- id: GMMP-WP
-  title: Global Machinery Marketplace Platform Whitepaper
+- id: iso_9001
+  title: ISO 9000 family — Quality management systems
+- id: as9100d
+  title: AS9100 Revision D — Quality Management System for Aviation, Space and Defense
+- id: cnc_machining
+  title: Computer numerical control (CNC machining) overview
+- id: five_axis_machining
+  title: Multiaxis (5-axis) machining overview
+- id: haas_vf2
+  title: Haas VF-2 Vertical Machining Center — Specifications
+- id: mazak_variaxis
+  title: Mazak VARIAXIS i NEO 5-axis Machining Centers — Specifications
+- id: aluminum_7075
+  title: 7075 aluminium alloy properties
+- id: ti6al4v
+  title: Titanium Alloy 6-4 (Ti-6Al-4V) properties and applications
+- id: inconel_718
+  title: Inconel nickel-chromium superalloys (625/718)
+- id: mutual_nda
+  title: Mutual Non-Disclosure Agreement — Standard Structure
+- id: capacity_subcontract
+  title: Manufacturing Capacity Subcontract Agreement — Standard Structure
+- id: cargo_insurance
+  title: Marine / cargo insurance overview
+- id: invoice_factoring
+  title: Factoring (finance) — invoice factoring / trade finance
+- id: heavy_rigging
+  title: Heavy Equipment Rigging & Machinery Moving
+- id: ontario_machinery_stats
+  title: 'Sectoral profile — Machinery Manufacturing: Ontario 2024-2026'
