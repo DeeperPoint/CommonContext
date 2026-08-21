@@ -23,7 +23,7 @@ goods:
   description: >
     Industrial machinery identified by category, brand, model, and condition.
   fields:
-    machinery_category:
+    category:
       type: enum
       description: "Primary machinery category"
       allowed_values:
@@ -50,32 +50,25 @@ goods:
         - Liebherr
         - Doosan
         - Mitsubishi
-        - Other
-      required: false
+      required: true
 
     condition:
       type: enum
+      cardinality: single
       description: "Condition designation per IMTA Grading Standard No. 12"
       allowed_values: [New, Used, Refurbished, Parts Only]
       required: true
 
-    certifications:
-      type: enum
-      description: "Compliance certifications a unit may carry"
-      allowed_values: ["ISO 9001", "CE Marking", "OSHA Compliant", "EPA Tier 4"]
+    operating_hours:
+      type: number
+      description: "Total operating hours logged on the unit"
       required: false
 
-    origin_country:
+    emissions_standard:
       type: enum
-      description: "Country the machinery originates from"
-      allowed_values:
-        ["USA", "Canada", "Mexico", "Germany", "Italy", "Japan",
-         "China", "South Korea", "India", "Brazil"]
-      required: true
-
-    average_unit_price_usd:
-      type: number
-      description: "Typical per-unit price in USD"
+      cardinality: single
+      description: "Engine emissions tier the unit meets"
+      allowed_values: [EPA Tier 2, EPA Tier 3, EPA Tier 4, EU Stage V]
       required: false
 
 # ── Logistics / facilitator services ─────────────────────────────────────
@@ -83,7 +76,7 @@ logistics:
   description: >
     Transport and service attributes for facilitators moving the machinery.
   fields:
-    equipment_types:
+    equipment_type:
       type: enum
       description: "Trailer / haul equipment a carrier operates"
       allowed_values:
@@ -94,12 +87,24 @@ logistics:
         - Container
         - Roll-On/Roll-Off
         - Heavy Haul Specialized
-      required: true
+      required: false
 
-    carrier_certifications:
+    service_region:
+      type: enum
+      cardinality: single
+      description: "Primary service region"
+      allowed_values: [North America, South America, Europe, Middle East, Africa]
+      required: false
+
+    carrier_credentials:
       type: enum
       description: "Carrier compliance credentials"
       allowed_values: ["DOT Compliant", "ADR (EU)", "TIR Carnet", "ISO 9001", "C-TPAT"]
+      required: false
+
+    cargo_insurance_usd:
+      type: number
+      description: "Cargo insurance coverage in USD"
       required: false
 
 # ── Mapping of trade parties to Cosolvent participant types ───────────────
@@ -144,3 +149,14 @@ referenced_standards:
     title: "IMTA Equipment Condition Grading Standard No. 12"
   - id: "INCOTERMS_2020"
     title: "INCOTERMS 2020 (EXW / FOB / CIF)"
+
+# Matching policy (GAP-3). Weighted slots are derived automatically from shared searchable
+# fields; hard gates are policy, declared here so they survive config regeneration. Keyed by
+# target participant slug (or role). Values use the runtime slug form of option labels.
+matching:
+  hard_gates:
+    seller:
+    - name: working_machines_only
+      field: condition
+      op: in
+      value: [new, used, refurbished]
