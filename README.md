@@ -204,4 +204,4 @@ For detailed information on the curation process, tools, and best practices, see
 
 ## License
 
-Copyright © 2026 Mustafa Uzumeri. All rights reserved.
+Released under the [MIT License](LICENSE). Copyright © 2026 Mustafa Uzumeri.
