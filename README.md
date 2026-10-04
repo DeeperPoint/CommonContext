@@ -168,4 +168,4 @@ Covers chunking, metadata/tag schemas, provenance round-trip, the export adapter
 
 ## License
 
-Copyright © 2026 Mustafa Uzumeri. All rights reserved.
+Copyright © 2026 Mustafa Uzumeri. Released under the [MIT License](LICENSE).
