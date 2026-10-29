@@ -155,7 +155,7 @@ async def _callOpenRouter(
         "Authorization": f"Bearer {apiKey}",
         "Content-Type": "application/json",
         "HTTP-Referer": "https://deeperpoint.com",
-        "X-Title": "Knowledge Slot Schema Analyzer",
+        "X-Title": "CommonContext Schema Analyzer",
     }
 
     payload = {

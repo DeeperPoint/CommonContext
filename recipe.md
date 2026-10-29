@@ -1,6 +1,6 @@
 <!-- Copyright © 2026 Mustafa Uzumeri. All rights reserved. -->
 
-# Knowledge Slot Curation Recipe
+# CommonContext Curation Recipe
 
 > **Purpose:** A living document that captures the evolving process, tools, and insights for curating domain knowledge into the Knowledge Slot format required by the Cosolvent marketplace framework.
 >

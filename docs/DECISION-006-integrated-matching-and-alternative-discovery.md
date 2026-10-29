@@ -3,7 +3,7 @@
 # DECISION-006: Integrated Deal Matching and Alternative Compliance Discovery
 
 > **Date:** 2026-05-26  
-> **Context:** Architectural design specification integrating the Cosolvent Semantic Matching engine, the CommonContext industry-grounded knowledge layer, Alternative Compliance and Regulatory Escape Hatch Discovery (ACD), and the Generative Match Story (GMS).  
+> **Context:** Architectural design specification integrating the Cosolvent Semantic Matching engine, the CommonContext-grounded Knowledge Slot reference library, Alternative Compliance and Regulatory Escape Hatch Discovery (ACD), and the Generative Match Story (GMS).  
 > **Status:** Active  
 > **Author:** Antigravity Agent  
 
@@ -91,11 +91,11 @@ The proposed platform architecture resolves these barriers by combining four dis
 ### Pillar 1: Semantic Profile Matching
 Rather than exact-match indexing, participant profiles are modeled as dynamic, schema-driven multi-dimensional vectors. The engine computes similarity across capabilities, materials, capacities, and requirements. It flags fits based on latent operational alignment, capturing fits that keyword engines ignore.
 
-### Pillar 2: CommonContext (Sponsor-Curated Industry Grounding)
-Raw semantic matching is commercially dangerous without vertical-specific grounding. **CommonContext** (formerly the Knowledge Slot) serves as a sponsor-curated reference library. It encodes regulatory thresholds, standard contract structures (e.g., GAFTA, CSA, UL), certifications, and logistics constraints. CommonContext pre-scopes the matching vocabulary and flags structural incompatibilities before the parties engage.
+### Pillar 2: CommonContext-Grounded Knowledge Slot (Sponsor-Curated Industry Grounding)
+Raw semantic matching is commercially dangerous without vertical-specific grounding. **CommonContext** curates the domain schema and reference content that populate Cosolvent's **Knowledge Slot** — the sponsor-curated reference library served live to the matching engine. It encodes regulatory thresholds, standard contract structures (e.g., GAFTA, CSA, UL), certifications, and logistics constraints. The Knowledge Slot pre-scopes the matching vocabulary and flags structural incompatibilities before the parties engage.
 
 ### Pillar 3: Alternative Compliance & Escape Hatch Discovery (ACD)
-When CommonContext identifies a rigid regulatory constraint that blocks a match (e.g., *"testing lab must be accredited"*), the **Alternative Compliance Discovery (ACD)** engine is activated. 
+When the Knowledge Slot identifies a rigid regulatory constraint that blocks a match (e.g., *"testing lab must be accredited"*), the **Alternative Compliance Discovery (ACD)** engine is activated. 
 Instead of failing the match, the engine searches its curated database of **Alternative Compliance Rules (ACRs)** (harvested via the automated AP-ACD crawling pipeline) for **Escape Hatch Archetypes**:
 *   *Delegated Witnessing:* Allowing a certified human to witness and sign off on a process in an unaccredited facility.
 *   *Risk-Tiered Scope Reduction:* Exempting technologies below a physical threshold (e.g., electrostatic vs. chemical storage).
@@ -126,7 +126,7 @@ flowchart TD
     subgraph Matching_Engine [Cosolvent Matching Core]
         E[Buyer Profile] & F[Seller Profile] -->|Cosine Similarity| G{Semantic Fit?}
         G -->|No| H[Discard Match]
-        G -->|Yes| I[Evaluate CommonContext Constraints]
+        G -->|Yes| I[Evaluate Knowledge Slot Constraints]
     end
 
     %% Constraint & Escape Hatch Decision
@@ -170,7 +170,7 @@ Every ACD-enabled Generative Match Story is compiled into four logical parts:
 │     Explains in plain English what the rigid rule is and why standard   │
 │     indexes reported that a transaction was impossible.                 │
 ├─────────────────────────────────────────────────────────────────────────┤
-│  2. THE COMMONCONTEXT ESCAPE HATCH                                      │
+│  2. THE KNOWLEDGE SLOT ESCAPE HATCH                                     │
 │     Reveals the specific, verified regulatory exemption or delegated   │
 │     pathway discovered in the sponsor-curated library.                  │
 ├─────────────────────────────────────────────────────────────────────────┤
@@ -205,7 +205,7 @@ To illustrate the integration in practice, the following is a representative Gen
 To qualify the structural welding procedures for Northern Mine's shaft contract, Dave's Custom Welding must perform destructive tensile and bend tests on weld coupons. Standard procurement guidelines specify that these tests must be performed in an ISO/IEC 17025 accredited facility. Under standard procedures, Dave would have to weld the steel coupons in Timmins, crate them, and ship them to an accredited testing laboratory in Toronto. This path imposes a 4-week wait time and $2,500 in testing and shipping costs, stalling the start of mining operations.
 
 ##### **2. The Discovery: The CWB Witnessing Escape Hatch**
-DeeperPoint's CommonContext has analyzed the structural testing guidelines and retrieved **CWB Group Bulletin W59-002 (Clause 5.2.1.2 - Alternative Supervision)**. This bulletin contains an regulatory "valve": destructive testing does *not* require a commercially accredited facility if the test is physically witnessed and signed off by a certified Welding Inspector (CWI), provided the testing equipment is calibrated to national standards.
+DeeperPoint's Knowledge Slot has analyzed the structural testing guidelines and retrieved **CWB Group Bulletin W59-002 (Clause 5.2.1.2 - Alternative Supervision)**. This bulletin contains an regulatory "valve": destructive testing does *not* require a commercially accredited facility if the test is physically witnessed and signed off by a certified Welding Inspector (CWI), provided the testing equipment is calibrated to national standards.
 
 ##### **3. The Operational Action Plan**
 Because **Dave is a certified CWI**, and **Cambrian College in Sudbury** (only 3 hours away) possesses a calibrated tensile testing machine (calibrated to ISO 7500-1) operated by a qualified metallurgist, the transaction can be structured locally:
@@ -270,7 +270,7 @@ Every consent action is logged in an immutable, platform-side `ConsentEvent` dat
 
 ## 7. Database Schema and Component Integration
 
-To implement this integrated matching architecture, the CommonContext repository extends its core PostgreSQL/pgvector database models. 
+To implement this integrated matching architecture, Cosolvent extends its core PostgreSQL/pgvector database models. 
 
 ### 7.1 Alternative Compliance Rules Table (`alternative_compliance_rules`)
 This table holds the structured escape hatch definitions parsed by the AP-ACD ingestion pipeline.

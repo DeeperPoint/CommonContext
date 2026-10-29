@@ -26,7 +26,7 @@ COSOLVENT_DIR ?= ../Cosolvent
 # to 5432 and silently hits the wrong server. Pin the DSN here.
 POSTGRES_DSN  ?= postgresql+asyncpg://postgres:postgres@localhost:15432/cosolvent
 
-# GUI (Knowledge Slot Curation Tool)
+# GUI (CommonContext)
 GUI_HOST ?= 127.0.0.1
 GUI_PORT ?= 8400
 
@@ -79,8 +79,8 @@ load-references: ## Load generated_refs.jsonl into Cosolvent's reference_library
 
 # ── GUI ───────────────────────────────────────────────────────────────
 
-gui: ## Launch the Knowledge Slot Curation Tool GUI (http://$(GUI_HOST):$(GUI_PORT))
-	@echo "Knowledge Slot Curation Tool -> http://$(GUI_HOST):$(GUI_PORT)"
+gui: ## Launch the CommonContext GUI (http://$(GUI_HOST):$(GUI_PORT))
+	@echo "CommonContext -> http://$(GUI_HOST):$(GUI_PORT)"
 	HOST=$(GUI_HOST) PORT=$(GUI_PORT) $(PY) server.py
 
 # ── Tests ─────────────────────────────────────────────────────────────

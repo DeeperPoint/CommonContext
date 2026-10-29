@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Mustafa Uzumeri. All rights reserved.
 
 """
-Knowledge Slot Curation Server
+CommonContext Curation Server
 
 FastAPI backend that wraps the existing conversion tools (convert_pdf.py,
 convert_url.py) and exposes them via a web GUI. Designed to be vertical-
@@ -148,7 +148,7 @@ class ChunkAndEmbedRequest(BaseModel):
 # ── FastAPI App ────────────────────────────────────────────────────────────
 
 app = FastAPI(
-    title="Knowledge Slot Curation Tool",
+    title="CommonContext",
     description="Ingest and convert reference documents for any Cosolvent marketplace vertical.",
     version="0.1.0",
 )
@@ -836,7 +836,7 @@ async def serveGui():
     if guiPath.exists():
         return HTMLResponse(guiPath.read_text(encoding="utf-8"))
     return HTMLResponse(
-        "<h1>Knowledge Slot Curation Tool</h1>"
+        "<h1>CommonContext</h1>"
         "<p>GUI not found. Place index.html in static/ directory.</p>"
         f"<p>API docs: <a href='/docs'>/docs</a></p>"
     )
@@ -847,7 +847,7 @@ async def serveGui():
 if __name__ == "__main__":
     import uvicorn
 
-    print("\n  Knowledge Slot Curation Tool")
+    print("\n  CommonContext")
     print("  http://localhost:8400\n")
 
     uvicorn.run(

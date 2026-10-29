@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Mustafa Uzumeri. All rights reserved.
 #
-# Dockerfile — Knowledge Slot Curation Tool
+# Dockerfile — CommonContext
 #
 # Packages the FastAPI curation server for deployment.
 # Data directories (inputs/, outputs/, provenance/, etc.) are

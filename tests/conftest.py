@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Mustafa Uzumeri. All rights reserved.
 """
-Shared pytest fixtures and external-boundary mocks for the Knowledge Slot
+Shared pytest fixtures and external-boundary mocks for the CommonContext
 curation test suite.
 
 The pipeline talks to two paid external services — OpenRouter (chunk topic

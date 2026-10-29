@@ -4,7 +4,7 @@
 
 > **Purpose:** Curate, structure, and prepare domain knowledge for a Cosolvent marketplace deployment — producing both the *domain schema* (→ `marketplace.yaml`) and the *knowledge library* (→ `reference_library`).
 >
-> **Naming:** This project was formerly *CommonContext* / *CommonContext*; it is now **CommonContext**. The "Knowledge Slot" term below refers to the Cosolvent architectural slot this content populates. Rename tracked in [`docs/ROADMAP-renaming-commoncontext-to-commoncontext.md`](docs/ROADMAP-renaming-commoncontext-to-commoncontext.md).
+> **Naming:** This project was formerly *KnowledgeSlot* / *AIKnowledgeSlotCuration*; it is now **CommonContext**. The "Knowledge Slot" term below refers to the Cosolvent architectural slot this content populates. Rename tracked in [`docs/ROADMAP-renaming-knowledgeslot-to-commoncontext.md`](docs/ROADMAP-renaming-knowledgeslot-to-commoncontext.md).
 >
 > **Relationship to other projects:**
 > - **Cosolvent** — Consumes both outputs: `configgen` turns the schema into `marketplace.yaml`, and `load-references` ingests the knowledge library into the `reference_library` pgvector table. That table, grounded domain Q&A, and the gap-signal store are now **implemented** on the Cosolvent side (see the Status Update).

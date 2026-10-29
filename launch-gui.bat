@@ -1,11 +1,11 @@
 @echo off
 :: Copyright (c) 2026 Mustafa Uzumeri. All rights reserved.
 ::
-:: Launch the Knowledge Slot Curation Tool GUI
+:: Launch the CommonContext GUI
 :: Opens at http://localhost:8400
 
 echo.
-echo   Knowledge Slot Curation Tool
+echo   CommonContext
 echo   ============================
 echo   Starting server...
 echo.

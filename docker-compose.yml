@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Mustafa Uzumeri. All rights reserved.
 #
-# docker-compose.yml — Knowledge Slot Curation Tool
+# docker-compose.yml — CommonContext
 #
 # Run:  docker compose up --build
 # Open: http://localhost:8400

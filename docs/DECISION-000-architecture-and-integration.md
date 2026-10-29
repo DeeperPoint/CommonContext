@@ -1,11 +1,13 @@
 <!-- Copyright © 2026 Mustafa Uzumeri. All rights reserved. -->
 
-# DECISION-000: Architecture and Integration (Knowledge Slot ↔ Cosolvent)
+# DECISION-000: Architecture and Integration (CommonContext ↔ Cosolvent)
 
 > **Date:** 2026-02-20 (original); updated 2026-03-14
-> **Context:** Foundational architectural specification for how the Knowledge Slot integrates with Cosolvent: organisational model, table design, chunking strategy, cross-vertical generalisation, and extension points.
+> **Context:** Foundational architectural specification for how CommonContext integrates with Cosolvent: organisational model, table design, chunking strategy, cross-vertical generalisation, and extension points.
 > **Status:** Open — contains resolved, superseded, and still-pending decisions (see §9)
 > **Participants:** Mustafa Uzumeri, Antigravity Agent
+>
+> **Terminology note (added retroactively):** This document predates the 2026-08-11 rename and originally used "Knowledge Slot" as this project's own name throughout. It has been corrected below to say **CommonContext** wherever it means this project (the content-curation tool and its output: domain schema, converted reference documents, seed data). Where "Knowledge Slot" still appears, it names **Cosolvent's own** architectural slot — the runtime reference-library/Q&A feature that hosts CommonContext's curated content (e.g. Cosolvent ROADMAP §16.2, items B1.4/B1.5 below) — a distinct, still-live concept that was never renamed.
 >
 > **Successor documents:**
 > - `DECISION-001-pull-signal-transport.md` — How gap signals flow between Cosolvent and CommonContext (supersedes parts of §9 Q6)
@@ -40,12 +42,12 @@ A) Cosolvent Framework (DeeperPoint-maintained, open-source)
    │  each vertical "starts from a version" of the framework
    │
    ├── B) Grain Trading Vertical (Sponsor X)
-   │   ├── B1. Knowledge Slot: grain_trade_schema.yaml + GAFTA docs + regulatory content
+   │   ├── B1. CommonContext: grain_trade_schema.yaml + GAFTA docs + regulatory content
    │   ├── B2. ClientSynth:    synthetic grain traders/buyers for testing & demo
    │   └── B3. Digital Twin:   A + B1 + B2 deployed together as test/demo environment
    │
    ├── B) Mental Health Vertical (Sponsor Y)
-   │   ├── B1. Knowledge Slot: therapy_schema.yaml + clinical guidelines + regulations
+   │   ├── B1. CommonContext: therapy_schema.yaml + clinical guidelines + regulations
    │   ├── B2. ClientSynth:    synthetic providers/clients for testing & demo
    │   └── B3. Digital Twin:   A + B1 + B2 deployed together
    │
@@ -57,7 +59,7 @@ A) Cosolvent Framework (DeeperPoint-maintained, open-source)
 - **Each vertical is sponsor-owned.** Different investor/sponsor organisations own different verticals. Multi-vertical implementations don't need integration beyond directory-level linking.
 - **Verticals configure, not fork.** The framework is expressive enough (YAML config, dynamic schemas, prompt management) that verticals should not need to modify framework code.
 - **ClientSynth restriction holds naturally.** Since the Digital Twin (B3) is a test/demo environment separate from production, synthetic users never contaminate a live marketplace. A production deployment is A + B1 with real users only.
-- **Framework defines extension points.** Verticals plug in via marketplace config, prompt templates, Knowledge Slot content, and ClientSynth profile data — not by modifying framework code.
+- **Framework defines extension points.** Verticals plug in via marketplace config, prompt templates, CommonContext content, and ClientSynth profile data — not by modifying framework code.
 
 ### What Each Layer Owns
 
@@ -65,7 +67,7 @@ A) Cosolvent Framework (DeeperPoint-maintained, open-source)
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | **A — Framework**       | `MarketplaceConfig` model, compiler, dynamic schemas, visibility engine, permission engine, vector search, document processing, admin API, communication system, deployment tooling | DeeperPoint                                                        |
 | **B — Vertical config** | `marketplace.yaml`, system prompts, profile field definitions, communication rules, onboarding settings                                                                             | Vertical sponsor + developer                                       |
-| **B1 — Knowledge Slot** | Domain schema YAML, converted reference documents, metadata tag vocabulary, chunking strategy config, seed data scripts                                                             | Vertical sponsor (domain expert)                                   |
+| **B1 — CommonContext** | Domain schema YAML, converted reference documents, metadata tag vocabulary, chunking strategy config, seed data scripts                                                             | Vertical sponsor (domain expert)                                   |
 | **B2 — ClientSynth**    | Persona templates, field value distributions, synthetic profile generation scripts                                                                                                  | Vertical sponsor (uses ClientSynth engine from A-adjacent tooling) |
 | **B3 — Digital Twin**   | Deployment recipe (Docker Compose referencing Cosolvent image + B1 + B2 content mounts)                                                                                             | Vertical sponsor                                                   |
 
@@ -74,7 +76,7 @@ A) Cosolvent Framework (DeeperPoint-maintained, open-source)
 ```
 grain-trading-vertical/                  ← Vertical (B)
   ├── marketplace.yaml                   ← Vertical config
-  ├── knowledge-slot/                    ← B1
+  ├── commoncontext/                     ← B1
   │   ├── schemas/grain_trade_schema.yaml
   │   ├── documents/                     ← Converted Markdown reference docs
   │   ├── seed-data/                     ← Ingestion-ready content for reference_library
@@ -407,7 +409,7 @@ When Cosolvent releases a new version, existing verticals decide whether to upgr
 
 Currently inside the Cosolvent repo. In the organisational model it's vertical-specific content (B), not framework code (A). The vertical project should own its `marketplace.yaml` and mount it into a Cosolvent container.
 
-**Mitigation:** Already supported via `MARKETPLACE_CONFIG_PATH` env var. But Knowledge Slot content has **no equivalent mount point** — there's no `REFERENCE_LIBRARY_SEED_PATH` or CLI for seed data loading. This needs to be part of B1.4 implementation.
+**Mitigation:** Already supported via `MARKETPLACE_CONFIG_PATH` env var. But CommonContext content has **no equivalent mount point** — there's no `REFERENCE_LIBRARY_SEED_PATH` or CLI for seed data loading. This needs to be part of B1.4 implementation.
 
 ### Gotcha 4: ClientSynth Needs Marketplace Config as Input
 
@@ -449,7 +451,7 @@ How currently converted documents would map to `reference_documents` rows:
 
 ### Roadmap & Organisation
 
-1. **Does the A / B(B1, B2, B3) model make sense?** Each vertical is sponsor-owned, starts from a Cosolvent version, and includes its own Knowledge Slot, ClientSynth, and Digital Twin.
+1. **Does the A / B(B1, B2, B3) model make sense?** Each vertical is sponsor-owned, starts from a Cosolvent version, and includes its own CommonContext, ClientSynth, and Digital Twin.
    > ⏳ **Still pending.** No formal decision recorded.
 
 2. **Roadmap phasing** — Should Knowledge Slot (B1.4) be pulled earlier in the Cosolvent roadmap, given that content curation is already underway? It's currently in Track B (after Phase 2).
@@ -468,7 +470,7 @@ How currently converted documents would map to `reference_documents` rows:
 5. **Chunking strategy** — Should the framework support pluggable chunking strategies per document type? The GAFTA contract has numbered clauses that should be chunk boundaries.
    > ⏳ **Still pending.** The analysis in §5 above remains valid. No formal decision recorded.
 
-6. **Seed data loading** — The vertical project needs a way to load Knowledge Slot content (B1) into a Cosolvent instance. Should this be a CLI command, a startup hook, or an admin API endpoint?
+6. **Seed data loading** — The vertical project needs a way to load CommonContext content (B1) into a Cosolvent instance. Should this be a CLI command, a startup hook, or an admin API endpoint?
    > 🔀 **Partially superseded by `DECISION-001-pull-signal-transport.md`**, which addresses the broader question of how CommonContext and Cosolvent exchange data at runtime. The seed loading mechanism is a subset of that transport decision.
 
 ### Vocabulary & Integration
