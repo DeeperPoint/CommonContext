@@ -1,5 +1,11 @@
 # AI Knowledge Slot Curation
 
+> **Where this fits.** CommonContext is one part of the DeeperPoint toolkit.
+> [MarketForge](https://github.com/DeeperPoint/MarketForge) is the toolkit's design map: what the
+> parts are, the order in which a market is built with them (a domain wiki, a question page, a
+> twin, a marketplace), and how far each has got. This README carries CommonContext's own detail:
+> installation, the curation workflow and the export formats.
+
 Tools and methods to collect and curate information for the Knowledge Slot in Cosolvent marketplace deployments.
 
 ## Overview
