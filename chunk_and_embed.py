@@ -43,6 +43,7 @@ _SCHEMAS_DIR = Path(__file__).resolve().parent / "schemas"
 if str(_SCHEMAS_DIR) not in _sys.path:
     _sys.path.insert(0, str(_SCHEMAS_DIR))
 from reference_metadata_schema import get_allowed_topics
+from wiki_frontmatter import derive_governance
 
 logger = logging.getLogger("curation.chunker")
 logging.basicConfig(level=logging.INFO)
@@ -62,12 +63,32 @@ def _loadPromptTemplate() -> str:
 # A leading YAML frontmatter block (provenance injected by provenance.py) must
 # be stripped before chunking, otherwise it is embedded as a meaningless first
 # chunk and pollutes vector search.
-_FRONTMATTER_RE = re.compile(r"^﻿?---\s*\n.*?\n---\s*\n", re.DOTALL)
+# The leading HTML comment is not incidental: every page in the curated wiki opens
+# with a copyright line before its frontmatter fence. Without allowing for it the
+# pattern did not match those pages at all, so the whole YAML block survived into
+# the first chunk and was embedded as prose — the exact pollution this strip exists
+# to prevent. The group captures the YAML body so the governance axes can be read
+# from the same match that removes it.
+_FRONTMATTER_RE = re.compile(r"^﻿?(?:<!--.*?-->\s*\n)?---[ \t]*\n(.*?)\n---[ \t]*\n", re.DOTALL)
 
 
 def _strip_frontmatter(content: str) -> str:
     """Remove a single leading YAML frontmatter block, if present."""
     return _FRONTMATTER_RE.sub("", content, count=1)
+
+
+def _read_frontmatter(content: str) -> dict[str, Any]:
+    """Parse the leading YAML frontmatter block. Empty dict when there is none."""
+    match = _FRONTMATTER_RE.match(content)
+    if not match:
+        return {}
+    try:
+        import yaml
+
+        parsed = yaml.safe_load(match.group(1))
+    except Exception:  # noqa: BLE001 - malformed frontmatter must not sink the chunker
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
 
 
 # Known standards bodies for the grain vertical, in match priority order.
@@ -302,7 +323,9 @@ async def process_document(
     if not schema_file.exists():
         raise FileNotFoundError(f"Schema file {schema_path} not found.")
 
-    doc_content = _strip_frontmatter(md_file.read_text(encoding="utf-8"))
+    raw_text = md_file.read_text(encoding="utf-8")
+    page_frontmatter = _read_frontmatter(raw_text)
+    doc_content = _strip_frontmatter(raw_text)
     schema_content = schema_file.read_text(encoding="utf-8")
     doc_stem = md_file.stem
     doc_filename = md_file.name
@@ -320,6 +343,13 @@ async def process_document(
 
     # Document-level metadata, mapped according to the active vertical's schema.
     base_metadata = _build_base_metadata(vertical, metadata_block)
+
+    # Carry the source page's governance down onto every chunk it produces. This
+    # is what lets a retrieval policy act on it: the page knows it is a fictional
+    # composite, but by the time a chunk is ranked the page is long gone, so the
+    # tags have to travel with the text. Pages predating the contract declare
+    # nothing and are read by derivation (see wiki_frontmatter).
+    base_metadata.update(derive_governance(page_frontmatter))
     
     # 2. Tagging (Concurrent)
     sem = asyncio.Semaphore(10) # Max 10 concurrent requests

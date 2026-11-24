@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://deeperpoint.com/schemas/wiki_page_frontmatter.schema.json",
+  "title": "Wiki page frontmatter",
+  "description": "The contract every curated wiki page declares. Four governance axes travel with the page, are carried onto each chunk the page produces, and are filterable at retrieval time. Everything else a wiki keeps in frontmatter is allowed through untouched: two wikis with different local conventions both validate against this.",
+  "type": "object",
+  "required": ["title", "type"],
+  "additionalProperties": true,
+
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable page name."
+    },
+    "type": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Page class in the owning wiki's own taxonomy (layer, scenario, concept, source, entity, framework, comparison, reference, vocabulary, rule, exemplar, overview...). Free-form by design: the governance axes below, not this, are what the platform enforces."
+    },
+
+    "ownership_layer": {
+      "enum": ["upstream", "local"],
+      "default": "upstream",
+      "description": "Which repository owns the page. 'upstream' is the shared wiki every twin pulls from; 'local' is material a single twin keeps because the shared wiki would reject it. This answers WHO MAY EDIT. It is deliberately NOT the same field as a chunk's source_layer, which answers whether content was curated or arrived raw and already drives a ranking discount. Conflating the two would change ranking with no visible signal."
+    },
+
+    "editorial_standing": {
+      "enum": ["draft", "reviewed", "signed_off"],
+      "default": "draft",
+      "description": "How far the page has moved through review. Ascending: drafted, read by a second person, signed off by someone accountable for it."
+    },
+
+    "evidence_class": {
+      "enum": ["source_backed", "interpretive", "demo_invented", "provisional"],
+      "description": "What kind of claim the page makes. 'source_backed' is traceable to an ingested document; 'interpretive' is synthesis beyond what a source states; 'demo_invented' is written to illustrate and describes nothing real; 'provisional' is expected to change. Omitted means it is derived from the page's provenance tags or type — see wiki_frontmatter.derive_governance."
+    },
+
+    "purpose": {
+      "enum": ["reference", "generation", "both"],
+      "default": "reference",
+      "description": "What the page is FOR, which is a separate question from who may curate it. 'reference' pages may be cited to a participant; 'generation' pages are seed material for the population generator and must never surface as a participant-facing citation. Without this axis, seed material gets cited as reference knowledge, because editorial standing cannot distinguish them: both are curated."
+    },
+
+    "summary": { "type": "string" },
+    "sources": { "type": "array", "items": { "type": "string" } },
+    "provenance": {
+      "type": "array",
+      "description": "Per-section grounding tags. W = source-backed, D = demo-invented, I = interpretive. evidence_class is derived from these when not declared outright.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "section": { "type": "string" },
+          "tag": { "enum": ["W", "D", "I"] }
+        },
+        "required": ["tag"]
+      }
+    },
+    "status": {
+      "type": "string",
+      "description": "Deliberately NOT constrained to the editorial vocabulary. One wiki writes status: draft|reviewed|signed_off and means review state; the other writes status: active on a catalogue page and means the catalogue is live. Pinning this key to one of those meanings would be the same name collision this contract exists to avoid, so editorial_standing is the field that carries review state, and status is read as a fallback only when its value already happens to be in that vocabulary."
+    },
+    "source_hashes": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "updated": { "type": "string" },
+    "share": { "type": "boolean" },
+    "axes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Persona axes this page covers — the market's real dimensions of variation. Read by the generator compiler."
+    }
+  },
+
+  "$comment": "Four axes rather than one ordering. A page can be upstream-owned, signed off, demo-invented and generation-only all at once; collapsing any pair loses a distinction the retrieval policy needs."
+}

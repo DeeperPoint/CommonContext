@@ -10,7 +10,58 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class ReferenceMetadata(BaseModel):
+class ChunkGovernance(BaseModel):
+    """Governance tags every chunk carries, in every vertical.
+
+    These travel from the wiki page a chunk came from (see
+    `wiki_page_frontmatter.schema.json`) down to the row in `reference_library`,
+    so a retrieval policy can act on them. Declaring them here is what turns the
+    convention into control: the metadata models forbid extra keys, so until a
+    tag is named in this vocabulary it cannot be attached to a chunk at all — and
+    a filter cannot be written against a tag that was never attached.
+
+    `source_layer` is the long-standing one, and it is deliberately NOT the same
+    field as `ownership_layer`. source_layer answers "was this curated or did it
+    arrive raw", and already drives a small ranking discount. ownership_layer
+    answers "which repository owns the page". They are orthogonal: a twin-local
+    page is curated, and a vendored upstream document is raw. Collapsing them
+    would change ranking with no visible signal.
+    """
+
+    model_config = ConfigDict(use_enum_values=True, extra="forbid")
+
+    source_layer: Literal["wiki", "raw"] = Field(
+        default="raw",
+        description="Whether the chunk came from a curated wiki page or a raw converted document. Curated chunks receive a small cosine-distance discount at retrieval.",
+    )
+
+    ownership_layer: Optional[Literal["upstream", "local"]] = Field(
+        default=None,
+        description="Which repository owns the source page: the shared upstream wiki, or this twin's local layer.",
+    )
+
+    editorial_standing: Optional[Literal["draft", "reviewed", "signed_off"]] = Field(
+        default=None,
+        description="How far the source page moved through review.",
+    )
+
+    evidence_class: Optional[Literal[
+        "source_backed",
+        "interpretive",
+        "demo_invented",
+        "provisional",
+    ]] = Field(
+        default=None,
+        description="What kind of claim the source page makes. 'demo_invented' material describes nothing real and must never be cited to a participant as fact.",
+    )
+
+    purpose: Optional[Literal["reference", "generation", "both"]] = Field(
+        default=None,
+        description="Whether the chunk may be cited to a participant ('reference') or exists only to seed the population generator ('generation').",
+    )
+
+
+class ReferenceMetadata(ChunkGovernance):
     """
     Reference Metadata Schema for the Grain Trading Vertical.
 
@@ -96,7 +147,7 @@ class ReferenceMetadata(BaseModel):
     )
 
 
-class ManufacturingReferenceMetadata(BaseModel):
+class ManufacturingReferenceMetadata(ChunkGovernance):
     """
     Reference Metadata Schema for the Specialty Manufacturing Vertical.
 
