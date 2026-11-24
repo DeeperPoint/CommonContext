@@ -37,6 +37,13 @@ import yaml
 from dotenv import load_dotenv
 
 HERE = Path(__file__).resolve().parent
+
+# schemas/ is not a package on the import path during a CLI run.
+_SCHEMAS_DIR = HERE / "schemas"
+if str(_SCHEMAS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCHEMAS_DIR))
+from wiki_frontmatter import GOVERNANCE_FIELDS, derive_governance  # noqa: E402
+
 OUTPUTS_DIR = HERE / "outputs"
 WIKI_DIR = HERE / "wiki"
 CONVENTIONS_PATH = WIKI_DIR / "CONVENTIONS.md"
@@ -141,6 +148,15 @@ def normalize_provenance(raw, *, has_sources: bool) -> list:
     if not out:
         out = [{"section": "page", "tag": "W" if has_sources else "I"}]
     return out
+
+
+def _declared_governance(page: dict) -> dict:
+    """The governance axes the model set on this page edit, ignoring the rest.
+
+    Pulled out separately so an unrecognised value falls through to derivation
+    instead of being written verbatim into frontmatter the linter would reject.
+    """
+    return {f: page[f] for f in GOVERNANCE_FIELDS if isinstance(page.get(f), str)}
 
 
 def _iter_pages() -> list[Path]:
@@ -284,6 +300,12 @@ def apply_pages(data: dict, *, today: str, dry_run: bool) -> list[str]:
             "source_hashes": source_hashes(merged_sources),
             "updated": today,
         }
+        # Write the four governance axes explicitly rather than leaving them to be
+        # derived on every read. Derivation exists so pages written before the
+        # contract keep working; a page written after it should state its own terms,
+        # so a curator can see and change them. Anything the model declared and the
+        # vocabulary accepts wins over the derived value.
+        fields.update(derive_governance({**fields, **_declared_governance(page)}))
         rel = dest.relative_to(WIKI_DIR).as_posix()
         action = "update" if dest.exists() else "create"
         written.append(f"{action}: {rel}")

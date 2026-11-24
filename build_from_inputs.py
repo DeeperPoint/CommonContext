@@ -179,12 +179,15 @@ def _wiki_identity_stem(page: Path) -> str:
 
 
 def build_knowledge(md_paths: list[Path], schema_path: Path, vertical: str, refs_out: Path,
-                    wiki_pages: list[Path] | None = None) -> bool:
+                    wiki_pages: list[Path] | None = None, *, use_cache: bool = True) -> bool:
     """Embed raw docs AND (optionally) wiki pages into ONE hybrid reference export.
 
     Every chunk is tagged ``metadata.source_layer`` = "raw" | "wiki" so Cosolvent's
     reference_library can prefer curated wiki chunks and fall back to raw coverage.
     Returns True if it ran.
+
+    Tagging and embedding are served from a content-addressed cache shared across
+    the whole run. ``use_cache=False`` recomputes both.
     """
     # Embeddings run on the single OpenRouter key (model openai/text-embedding-3-small,
     # 1536-dim) — falling back to a direct OpenAI key if that's all that's present.
@@ -199,13 +202,20 @@ def build_knowledge(md_paths: list[Path], schema_path: Path, vertical: str, refs
     import asyncio
 
     from chunk_and_embed import process_document
+    from chunk_cache import ChunkCache
 
     tag_vertical = _tag_vertical(vertical)
     processed: list[Path] = []
 
+    # One cache for the whole run. The raw and wiki passes often cover the same
+    # material — a wiki page quotes the document it was built from — so sharing
+    # the cache across both is where most of the saving comes from.
+    cache = ChunkCache(enabled=use_cache)
+
     def _embed(path: Path, *, source_layer: str, identity_stem: str | None = None) -> None:
         asyncio.run(process_document(str(path), str(schema_path), tag_vertical,
-                                     source_layer=source_layer, identity_stem=identity_stem))
+                                     source_layer=source_layer, identity_stem=identity_stem,
+                                     cache=cache, use_cache=use_cache))
         stem = identity_stem or path.stem
         out = OUTPUTS_DIR / f"{stem}_processed.jsonl"
         if out.exists():
@@ -225,6 +235,9 @@ def build_knowledge(md_paths: list[Path], schema_path: Path, vertical: str, refs
                 _embed(wp, source_layer="wiki", identity_stem=_wiki_identity_stem(wp))
             except Exception as exc:
                 print(f"  WARN: embedding failed for wiki page {wp.name}: {exc}", file=sys.stderr)
+
+    print(f"[knowledge] {cache.stats}")
+    cache.close()
 
     if not processed:
         print("[knowledge] no chunks embedded — nothing to export.", file=sys.stderr)
@@ -268,6 +281,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--full", action="store_true", help="Use marker-pdf (ML/OCR) instead of fast extraction")
     parser.add_argument("--per-doc-chars", type=int, default=12000, help="Max chars per doc fed to the LLM")
     parser.add_argument("--skip-knowledge", action="store_true", help="Skip the embed/export step entirely")
+    parser.add_argument("--no-cache", action="store_true",
+                        help="Re-tag and re-embed every chunk instead of reusing cached results "
+                             "(for when a provider changes a model behind a stable name)")
     parser.add_argument("--keep-outputs", action="store_true",
                         help="Do NOT wipe stale .md/_processed.jsonl in outputs/ before converting")
     parser.add_argument("--skip-wiki", action="store_true",
@@ -313,7 +329,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args.skip_knowledge:
         build_knowledge(md_paths, out_schema, vertical, (HERE / args.refs_out).resolve(),
-                        wiki_pages=wiki_pages or None)
+                        wiki_pages=wiki_pages or None, use_cache=not args.no_cache)
 
     # Final line is machine-readable so the Cosolvent half can pick up the paths/vertical.
     print(f"RESULT schema={out_schema} vertical={vertical}")

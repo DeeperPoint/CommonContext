@@ -45,6 +45,19 @@ from wiki_ingest import (  # type: ignore
 )
 
 HERE = Path(__file__).resolve().parent
+
+# The frontmatter contract lives in schemas/, which is not a package on the import
+# path during a CLI run (same reason chunk_and_embed.py adds it).
+_SCHEMAS_DIR = HERE / "schemas"
+if str(_SCHEMAS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCHEMAS_DIR))
+from wiki_frontmatter import (  # noqa: E402
+    GOVERNANCE_FIELDS,
+    derive_governance,
+    is_citable,
+    validate_frontmatter,
+)
+
 LINT_PROMPT_PATH = HERE / "prompts" / "wiki_lint.md"
 REPORT_PATH = WIKI_DIR / "lint-report.md"
 DEFAULT_MODEL = os.environ.get("WIKI_MODEL", "anthropic/claude-sonnet-5")
@@ -134,6 +147,41 @@ def provenance_report() -> dict:
                 (rel, f"majority demo/interpretive without sign-off (W/D/I={m['W']}/{m['D']}/{m['I']})")
             )
     return {"checked": checked, "violations": violations}
+
+
+# ── Frontmatter governance (deterministic, schema-driven) ────────────────────
+def governance_report() -> dict:
+    """Validate every page against the published frontmatter contract, and
+    report how the four governance axes resolve across the wiki.
+
+    Violations are schema failures — an off-vocabulary value for one of the
+    controlled axes. The distribution beside them is the useful part day to day:
+    it shows at a glance how much of the corpus is demo-invented or
+    generation-only, i.e. how much of it must never reach a participant.
+    """
+    violations: list[tuple[str, str]] = []
+    distribution: dict[str, dict[str, int]] = {f: {} for f in GOVERNANCE_FIELDS}
+    non_citable: list[str] = []
+    checked = 0
+
+    for p in _iter_pages():
+        fm, _ = parse_frontmatter(p.read_text(encoding="utf-8"))
+        rel = p.relative_to(WIKI_DIR).as_posix()
+        checked += 1
+        for err in validate_frontmatter(fm):
+            violations.append((rel, err))
+        gov = derive_governance(fm)
+        for field, value in gov.items():
+            distribution[field][value] = distribution[field].get(value, 0) + 1
+        if not is_citable(gov):
+            non_citable.append(rel)
+
+    return {
+        "checked": checked,
+        "violations": violations,
+        "distribution": distribution,
+        "non_citable": sorted(non_citable),
+    }
 
 
 # ── Staleness (deterministic, hash-based) ────────────────────────────────────
@@ -230,7 +278,8 @@ def emit_signals(findings: list[dict], dsn: str) -> int:
 
 
 # ── Report writing ───────────────────────────────────────────────────────────
-def write_report(struct: dict, prov: dict, stale: dict, editorial: dict, *, today: str) -> None:
+def write_report(struct: dict, prov: dict, stale: dict, editorial: dict, *, today: str,
+                 gov: dict | None = None) -> None:
     lines = [f"# Wiki Lint Report — {today}", "", "## Structural", ""]
     lines.append(f"- Pages: {struct['page_count']}")
     lines.append(f"- Orphans: {len(struct['orphans'])}")
@@ -245,6 +294,23 @@ def write_report(struct: dict, prov: dict, stale: dict, editorial: dict, *, toda
     lines.append(f"- Violations: {len(prov['violations'])}")
     for rel, reason in prov["violations"]:
         lines.append(f"  - {rel}: {reason}")
+
+    if gov is not None:
+        lines += ["", "## Frontmatter governance", ""]
+        lines.append(f"- Pages checked: {gov['checked']}")
+        lines.append(f"- Schema violations: {len(gov['violations'])}")
+        for rel, err in gov["violations"]:
+            lines.append(f"  - {rel}: {err}")
+        for field in GOVERNANCE_FIELDS:
+            spread = gov["distribution"].get(field, {})
+            rendered = ", ".join(f"{k} {v}" for k, v in sorted(spread.items()))
+            lines.append(f"- {field}: {rendered or '(none)'}")
+        lines.append(
+            f"- Not citable to a participant (generation-only or demo-invented): "
+            f"{len(gov['non_citable'])}"
+        )
+        for rel in gov["non_citable"]:
+            lines.append(f"  - {rel}")
 
     lines += ["", "## Staleness", ""]
     lines.append(f"- Stale pages (source changed since ingest): {len(stale['stale'])}")
@@ -288,9 +354,12 @@ def main(argv: list[str] | None = None) -> int:
     struct = structural_report()
     prov = provenance_report()
     stale = staleness_report()
+    gov = governance_report()
     print(f"[lint] {struct['page_count']} pages | {len(struct['orphans'])} orphan(s) | "
           f"{len(struct['broken_links'])} broken link(s) | "
-          f"{len(prov['violations'])} provenance issue(s) | {len(stale['stale'])} stale")
+          f"{len(prov['violations'])} provenance issue(s) | {len(stale['stale'])} stale | "
+          f"{len(gov['violations'])} frontmatter issue(s) | "
+          f"{len(gov['non_citable'])} page(s) not citable")
 
     editorial = {"findings": []}
     if not args.structural:
@@ -301,7 +370,7 @@ def main(argv: list[str] | None = None) -> int:
             editorial = editorial_report(struct, model=args.model, key=key)
             print(f"[lint] {len(editorial['findings'])} editorial finding(s)")
 
-    write_report(struct, prov, stale, editorial, today=today)
+    write_report(struct, prov, stale, editorial, today=today, gov=gov)
     print(f"[lint] wrote {REPORT_PATH.relative_to(HERE)}")
 
     if args.emit_signals:
@@ -315,9 +384,11 @@ def main(argv: list[str] | None = None) -> int:
             n = emit_signals(editorial.get("findings", []), dsn)
             print(f"[lint] emitted {n} gap signal(s) to the DB.")
 
-    if args.strict and (struct["broken_links"] or prov["violations"] or stale["stale"]):
-        print("[lint] FAILED (--strict): fix broken links, provenance, and staleness above.",
-              file=sys.stderr)
+    if args.strict and (
+        struct["broken_links"] or prov["violations"] or stale["stale"] or gov["violations"]
+    ):
+        print("[lint] FAILED (--strict): fix broken links, provenance, staleness, "
+              "and frontmatter above.", file=sys.stderr)
         return 1
     return 0
 
