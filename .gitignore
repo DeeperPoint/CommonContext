@@ -185,3 +185,7 @@ cython_debug/
 
 # python environments
 .venv/
+
+# Content-addressed cache for chunk tagging and embedding. Disposable: delete it
+# and the next run rebuilds it at full price, correctly.
+outputs/.chunk_cache.sqlite

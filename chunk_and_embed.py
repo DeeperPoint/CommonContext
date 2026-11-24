@@ -45,6 +45,8 @@ if str(_SCHEMAS_DIR) not in _sys.path:
 from reference_metadata_schema import get_allowed_topics
 from wiki_frontmatter import derive_governance
 
+from chunk_cache import ChunkCache, content_key
+
 logger = logging.getLogger("curation.chunker")
 logging.basicConfig(level=logging.INFO)
 
@@ -295,9 +297,88 @@ async def _embed_chunks(client: AsyncOpenAI, texts: list[str], model: str = "tex
                 input=batch
             )
             return [data.embedding for data in resp.data]
-            
+
         embeddings.extend(await _do_embed())
     return embeddings
+
+
+async def _embed_chunks_cached(
+    client: AsyncOpenAI, texts: list[str], model: str, cache: ChunkCache
+) -> list[list[float]]:
+    """Embed only the texts not already cached, then reassemble in order.
+
+    Deduplicates within the call as well as against the cache: a boilerplate
+    paragraph repeated across a document is one embedding, not several.
+    """
+    keys = [content_key(model, text) for text in texts]
+    resolved: dict[str, list[float]] = {}
+    pending: list[tuple[str, str]] = []  # (key, text), each key once
+    seen: set[str] = set()
+
+    for key, text in zip(keys, texts):
+        if key in seen:
+            continue
+        seen.add(key)
+        cached = cache.get("embedding", key)
+        if isinstance(cached, list) and cached:
+            resolved[key] = cached
+        else:
+            pending.append((key, text))
+
+    if pending:
+        logger.info("Embedding %d new chunk(s) via %s (%d cached)...",
+                    len(pending), model, len(texts) - len(pending))
+        fresh = await _embed_chunks(client, [text for _, text in pending], model)
+        writes: list[tuple[str, Any]] = []
+        for (key, _), vector in zip(pending, fresh):
+            resolved[key] = vector
+            writes.append((key, vector))
+        cache.put_many("embedding", writes)
+    else:
+        logger.info("Embedding: all %d chunk(s) served from cache.", len(texts))
+
+    return [resolved[key] for key in keys]
+
+
+async def _tag_chunks_cached(
+    schema_content: str,
+    doc_filename: str,
+    chunks: list[dict[str, str]],
+    allowed_topics: list[str],
+    cache: ChunkCache,
+) -> list[str]:
+    """Tag only the chunks not already cached.
+
+    The key covers the prompt template and the allowed vocabulary as well as the
+    text: changing either changes what the model should answer, and a cache that
+    ignored them would serve tags from the old prompt indefinitely.
+    """
+    template_fingerprint = content_key(_loadPromptTemplate(), ",".join(allowed_topics))
+    keys = [content_key(template_fingerprint, doc_filename, c["hierarchy"], c["content"]) for c in chunks]
+
+    topics: list[str | None] = [cache.get("topic", key) for key in keys]
+    todo = [i for i, topic in enumerate(topics) if not isinstance(topic, str)]
+
+    if todo:
+        logger.info("Tagging %d new chunk(s) for %s (%d cached)...",
+                    len(todo), doc_filename, len(chunks) - len(todo))
+        sem = asyncio.Semaphore(10)
+        fresh = await asyncio.gather(*[
+            _tag_chunk_topic(
+                schema_content, doc_filename, chunks[i]["hierarchy"], chunks[i]["content"],
+                sem, allowed_topics,
+            )
+            for i in todo
+        ])
+        writes: list[tuple[str, Any]] = []
+        for i, topic in zip(todo, fresh):
+            topics[i] = topic
+            writes.append((keys[i], topic))
+        cache.put_many("topic", writes)
+    else:
+        logger.info("Tagging: all %d chunk(s) for %s served from cache.", len(chunks), doc_filename)
+
+    return [t if isinstance(t, str) else "general" for t in topics]
 
 
 async def process_document(
@@ -307,6 +388,8 @@ async def process_document(
     *,
     source_layer: str = "raw",
     identity_stem: str | None = None,
+    cache: ChunkCache | None = None,
+    use_cache: bool = True,
 ) -> str:
     """Process a markdown file into contextualized chunks with tags and embeddings.
 
@@ -314,7 +397,16 @@ async def process_document(
     reference library can prefer high-signal wiki chunks and fall back to raw ones.
     ``identity_stem`` overrides the id/output-file stem (used for wiki pages, whose
     filenames can collide with raw docs — e.g. sources/27_2025.md vs 27_2025.pdf).
+
+    Tagging and embedding are served from a content-addressed cache. Pass a shared
+    ``cache`` when processing many documents in one run so they share entries.
+    ``use_cache=False`` turns the cache off entirely — no reads and no writes — for
+    the case where a provider changes a model behind a stable name; deleting the
+    cache file has the same effect and lets the next run repopulate it.
     """
+    owns_cache = cache is None or not use_cache
+    if cache is None or not use_cache:
+        cache = ChunkCache(enabled=use_cache)
     md_file = Path(markdown_path)
     if not md_file.exists():
         raise FileNotFoundError(f"Markdown file {markdown_path} not found.")
@@ -351,24 +443,12 @@ async def process_document(
     # nothing and are read by derivation (see wiki_frontmatter).
     base_metadata.update(derive_governance(page_frontmatter))
     
-    # 2. Tagging (Concurrent)
-    sem = asyncio.Semaphore(10) # Max 10 concurrent requests
+    # 2. Tagging (concurrent, cache-first)
     allowed_topics = get_allowed_topics(vertical)
-    logger.info(f"Tagging {len(valid_chunks)} chunks for {doc_filename}...")
+    topics = await _tag_chunks_cached(
+        schema_content, doc_filename, valid_chunks, allowed_topics, cache
+    )
 
-    tasks = [
-        _tag_chunk_topic(
-            schema_content,
-            doc_filename,
-            c["hierarchy"],
-            c["content"],
-            sem,
-            allowed_topics,
-        ) for c in valid_chunks
-    ]
-    
-    topics = await asyncio.gather(*tasks)
-    
     # 3. Preparing contextual content and Embedding
     # Prefer a SINGLE OpenRouter key for embeddings (model openai/text-embedding-3-small,
     # 1536-dim — matches Cosolvent's reference_library). Fall back to a direct OpenAI key.
@@ -388,14 +468,13 @@ async def process_document(
     else:
         raise RuntimeError("No embedding key found — set OPENROUTER_API_KEY (preferred) or OPENAI_API_KEY.")
 
-    logger.info(f"Embedding {len(valid_chunks)} chunks via {embed_model}...")
     contextual_contents = [
         f"[{doc_filename}] {c['hierarchy']} > {c['content']}" if c['hierarchy'] else f"[{doc_filename}] {c['content']}"
         for c in valid_chunks
     ]
-    
-    embeddings = await _embed_chunks(client, contextual_contents, embed_model)
-    
+
+    embeddings = await _embed_chunks_cached(client, contextual_contents, embed_model, cache)
+
     # 4. Stream to JSONL
     out_file = OUTPUT_DIR / f"{ident}_processed.jsonl"
     with open(out_file, 'w', encoding="utf-8") as f:
@@ -413,7 +492,11 @@ async def process_document(
             }
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
             
-    logger.info(f"Successfully processed {len(valid_chunks)} chunks to {out_file}")
+    logger.info(
+        "Successfully processed %d chunks to %s [%s]", len(valid_chunks), out_file, cache.stats
+    )
+    if owns_cache:
+        cache.close()
     return str(out_file)
 
 

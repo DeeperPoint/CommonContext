@@ -28,6 +28,25 @@ if str(SCHEMAS) not in sys.path:
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
+
+# Give every test its own chunk cache. Two reasons, and the second is why this is
+# per-test rather than per-session: the cache otherwise writes into the repo's
+# outputs/ and persists between runs, and within a single run several tests feed
+# the SAME fixture document through a DIFFERENTLY patched tagging model. A shared
+# cache serves the first test's answer to the second, so they pass or fail
+# depending on collection order.
+@pytest.fixture(autouse=True)
+def _isolated_chunk_cache(tmp_path):
+    import os
+
+    previous = os.environ.get("CHUNK_CACHE_PATH")
+    os.environ["CHUNK_CACHE_PATH"] = str(tmp_path / "chunk-cache.sqlite")
+    yield
+    if previous is None:
+        os.environ.pop("CHUNK_CACHE_PATH", None)
+    else:
+        os.environ["CHUNK_CACHE_PATH"] = previous
+
 EMBED_DIM = 1536
 
 
